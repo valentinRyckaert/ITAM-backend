@@ -1,23 +1,3 @@
-from typing import Annotated
-from fastapi import Depends, FastAPI, HTTPException, Query
-from sqlmodel import Session, create_engine, select
-from fastapi.responses import FileResponse
-from db.database import *
-
-def get_session():
-    with Session(engine) as session:
-        yield session
-
-SessionDep = Annotated[Session, Depends(get_session)]
-engine = create_engine("sqlite:///db/database.db", connect_args={"check_same_thread": False})
-app = FastAPI()
-
-
-@app.on_event("startup")
-def on_startup():
-    create_db(engine)
-
-
 ###########
 # DEVICES #
 ###########
@@ -39,14 +19,14 @@ def read_devices(
     return devices
 
 @app.get("/devices/{device_id}", response_model=Device)
-def read_device(device_id: int, session: SessionDep) -> Device:
+def read_device(device_id: int, session: SessionDep = Depends(get_session)) -> Device:
     device = session.get(Device, device_id)
     if not device:
         return {"error" : "no device found"}
     return device
 
-@app.put("/devices/{device_id}", response_model=Device)
-def update_device(device_id: int, device: Device, session: SessionDep) -> Device:
+@app.put("/devices/{device_id}", response_model=Device) ############ NE PAS METTRE DE VALEUR PAR DEFAUT POUR SESSIONDEP
+def update_device(device_id: int, device: Device, session: SessionDep = Depends(get_session)) -> Device:
     db_device = session.get(Device, device_id)
     if not db_device:
         return {"error" : "no device found"}
@@ -59,7 +39,7 @@ def update_device(device_id: int, device: Device, session: SessionDep) -> Device
     return db_device
 
 @app.delete("/devices/{device_id}/delete", response_model=dict)
-def delete_device(device_id: int, session: SessionDep) -> dict:
+def delete_device(device_id: int, session: SessionDep = Depends(get_session)) -> dict:
     device = session.get(Device, device_id)
     if not device:
         return {"error" : "no device found"}
@@ -78,25 +58,25 @@ def download_packages(id: int):
 ################
 
 @app.post("/devicegroups/", response_model=DeviceGroup)
-def create_device_group(device_group: DeviceGroup, session: SessionDep) -> DeviceGroup:
+def create_device_group(device_group: DeviceGroup, session: SessionDep = Depends(get_session)) -> DeviceGroup:
     session.add(device_group)
     session.commit()
     session.refresh(device_group)
     return device_group
 
-@app.get("/devicegroups/", response_model=list[DeviceGroup])
-def read_device_groups(session: SessionDep) -> list[DeviceGroup]:
+@app.get("/devicegroups/", response_model=List[DeviceGroup])
+def read_device_groups(session: SessionDep = Depends(get_session)) -> List[DeviceGroup]:
     return session.exec(select(DeviceGroup)).all()
 
 @app.get("/devicegroups/{device_group_id}", response_model=DeviceGroup)
-def read_device_group(device_group_id: int, session: SessionDep) -> DeviceGroup:
+def read_device_group(device_group_id: int, session: SessionDep = Depends(get_session)) -> DeviceGroup:
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
         return {"error" : "no group found"}
     return device_group
 
 @app.put("/devicegroups/{device_group_id}", response_model=DeviceGroup)
-def update_device_group(device_group_id: int, device_group: DeviceGroup, session: SessionDep) -> DeviceGroup:
+def update_device_group(device_group_id: int, device_group: DeviceGroup, session: SessionDep = Depends(get_session)) -> DeviceGroup:
     db_device_group = session.get(DeviceGroup, device_group_id)
     if not db_device_group:
         return {"error" : "no group found"}
@@ -109,7 +89,7 @@ def update_device_group(device_group_id: int, device_group: DeviceGroup, session
     return db_device_group
 
 @app.delete("/devicegroups/{device_group_id}/delete", response_model=dict)
-def delete_device_group(device_group_id: int, session: SessionDep) -> dict:
+def delete_device_group(device_group_id: int, session: SessionDep = Depends(get_session)) -> dict:
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
         return {"error" : "no group found"}
@@ -125,25 +105,25 @@ def delete_device_group(device_group_id: int, session: SessionDep) -> dict:
 ###########
 
 @app.post("/packages/", response_model=Package)
-def create_package(package: Package, session: SessionDep) -> Package:
+def create_package(package: Package, session: SessionDep = Depends(get_session)) -> Package:
     session.add(package)
     session.commit()
     session.refresh(package)
     return package
 
-@app.get("/packages/", response_model=list[Package])
-def read_packages(session: SessionDep) -> list[Package]:
+@app.get("/packages/", response_model=List[Package])
+def read_packages(session: SessionDep = Depends(get_session)) -> List[Package]:
     return session.exec(select(Package)).all()
 
 @app.get("/packages/{package_id}", response_model=Package)
-def read_package(package_id: int, session: SessionDep) -> Package:
+def read_package(package_id: int, session: SessionDep = Depends(get_session)) -> Package:
     package = session.get(Package, package_id)
     if not package:
         return {"error" : "no package found"}
     return package
 
 @app.put("/packages/{package_id}", response_model=Package)
-def update_package(package_id: int, package: Package, session: SessionDep) -> Package:
+def update_package(package_id: int, package: Package, session: SessionDep = Depends(get_session)) -> Package:
     db_package = session.get(Package, package_id)
     if not db_package:
         return {"error" : "no package found"}
@@ -163,7 +143,7 @@ def update_package(package_id: int, package: Package, session: SessionDep) -> Pa
     return db_package
 
 @app.delete("/packages/{package_id}/delete", response_model=dict)
-def delete_package(package_id: int, session: SessionDep) -> dict:
+def delete_package(package_id: int, session: SessionDep = Depends(get_session)) -> dict:
     package = session.get(Package, package_id)
     if not package:
         return {"error" : "no package found"}
@@ -178,25 +158,25 @@ def delete_package(package_id: int, session: SessionDep) -> dict:
 #################
 
 @app.post("/packagegroups/", response_model=PackageGroup)
-def create_package_group(package_group: PackageGroup, session: SessionDep) -> PackageGroup:
+def create_package_group(package_group: PackageGroup, session: SessionDep = Depends(get_session)) -> PackageGroup:
     session.add(package_group)
     session.commit()
     session.refresh(package_group)
     return package_group
 
-@app.get("/packagegroups/", response_model=list[PackageGroup])
-def read_package_groups(session: SessionDep) -> list[PackageGroup]:
+@app.get("/packagegroups/", response_model=List[PackageGroup])
+def read_package_groups(session: SessionDep = Depends(get_session)) -> List[PackageGroup]:
     return session.exec(select(PackageGroup)).all()
 
 @app.get("/packagegroups/{package_group_id}", response_model=PackageGroup)
-def read_package_group(package_group_id: int, session: SessionDep) -> PackageGroup:
+def read_package_group(package_group_id: int, session: SessionDep = Depends(get_session)) -> PackageGroup:
     package_group = session.get(PackageGroup, package_group_id)
     if not package_group:
         return {"error" : "no group found"}
     return package_group
 
 @app.put("/packagegroups/{package_group_id}", response_model=PackageGroup)
-def update_package_group(package_group_id: int, package_group: PackageGroup, session: SessionDep) -> PackageGroup:
+def update_package_group(package_group_id: int, package_group: PackageGroup, session: SessionDep = Depends(get_session)) -> PackageGroup:
     db_package_group = session.get(PackageGroup, package_group_id)
     if not db_package_group:
         return {"error" : "no group found"}
@@ -209,7 +189,7 @@ def update_package_group(package_group_id: int, package_group: PackageGroup, ses
     return db_package_group
 
 @app.delete("/packagegroups/{package_group_id}/delete", response_model=dict)
-def delete_package_group(package_group_id: int, session: SessionDep) -> dict:
+def delete_package_group(package_group_id: int, session: SessionDep = Depends(get_session)) -> dict:
     package_group = session.get(PackageGroup, package_group_id)
     if not package_group:
         return {"error" : "no group found"}
@@ -225,25 +205,25 @@ def delete_package_group(package_group_id: int, session: SessionDep) -> dict:
 ########
 
 @app.post("/roles/", response_model=Role)
-def create_role(role: Role, session: SessionDep) -> Role:
+def create_role(role: Role, session: SessionDep = Depends(get_session)) -> Role:
     session.add(role)
     session.commit()
     session.refresh(role)
     return role
 
-@app.get("/roles/", response_model=list[Role])
-def read_roles(session: SessionDep) -> list[Role]:
+@app.get("/roles/", response_model=List[Role])
+def read_roles(session: SessionDep = Depends(get_session)) -> List[Role]:
     return session.exec(select(Role)).all()
 
 @app.get("/roles/{role_id}", response_model=Role)
-def read_role(role_id: int, session: SessionDep) -> Role:
+def read_role(role_id: int, session: SessionDep = Depends(get_session)) -> Role:
     role = session.get(Role, role_id)
     if not role:
         return {"error" : "no role found"}
     return role
 
 @app.put("/roles/{role_id}", response_model=Role)
-def update_role(role_id: int, role: Role, session: SessionDep) -> Role:
+def update_role(role_id: int, role: Role, session: SessionDep = Depends(get_session)) -> Role:
     db_role = session.get(Role, role_id)
     if not db_role:
         return {"error" : "no role found"}
@@ -258,7 +238,7 @@ def update_role(role_id: int, role: Role, session: SessionDep) -> Role:
     return db_role
 
 @app.delete("/roles/{role_id}/delete", response_model=dict)
-def delete_role(role_id: int, session: SessionDep) -> dict:
+def delete_role(role_id: int, session: SessionDep = Depends(get_session)) -> dict:
     role = session.get(Role,    role_id)
     if not role:
         return {"error" : "no role found"}
@@ -273,25 +253,25 @@ def delete_role(role_id: int, session: SessionDep) -> dict:
 ########
 
 @app.post("/users/", response_model=User)
-def create_user(user: User, session: SessionDep) -> User:
+def create_user(user: User, session: SessionDep = Depends(get_session)) -> User:
     session.add(user)
     session.commit()
     session.refresh(user)
     return user
 
-@app.get("/users/", response_model=list[User])
-def read_users(session: SessionDep) -> list[User]:
+@app.get("/users/", response_model=List[User])
+def read_users(session: SessionDep = Depends(get_session)) -> List[User]:
     return session.exec(select(User)).all()
 
 @app.get("/users/{user_id}", response_model=User)
-def read_user(user_id: int, session: SessionDep) -> User:
+def read_user(user_id: int, session: SessionDep = Depends(get_session)) -> User:
     user = session.get(User, user_id)
     if not user:
         return {"error" : "no user found"}
     return user
 
 @app.put("/users/{user_id}", response_model=User)
-def update_user(user_id: int, user: User, session: SessionDep) -> User:
+def update_user(user_id: int, user: User, session: SessionDep = Depends(get_session)) -> User:
     db_user = session.get(User, user_id)
     if not db_user:
         return {"error" : "no user found"}
@@ -307,7 +287,7 @@ def update_user(user_id: int, user: User, session: SessionDep) -> User:
     return db_user
 
 @app.delete("/users/{user_id}/delete", response_model=dict)
-def delete_user(user_id: int, session: SessionDep) -> dict:
+def delete_user(user_id: int, session: SessionDep = Depends(get_session)) -> dict:
     user = session.get(User, user_id)
     if not user:
         return {"error" : "no user found"}
