@@ -8,7 +8,7 @@ class Device(SQLModel, table=True):
     D_id: int = Field(index=True, primary_key=True)
     D_name: str = Field(index=True)
     D_os: int = Field(index=True)
-    D_group_id: int | None = Field(default=None, index=True, foreign_key="devicegroup.DG_id")
+    D_group_device_id: int | None = Field(default=None, index=True, foreign_key="devicegroup.DG_id")
 
 class PackageGroup(SQLModel, table=True):
     PG_id: int = Field(index=True, primary_key=True)
