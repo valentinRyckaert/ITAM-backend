@@ -4,12 +4,14 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
+from sqlmodel import select
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from ..db.database import DeviceGroup
 from ..dependencies import SessionDep, pwd_context, oauth2_scheme
 from ..db.database import User
 
 router = APIRouter(
+    prefix="/auth",
     tags=["auth"],
     dependencies=[],
     responses={404: {"description": "Not found"}},
@@ -21,6 +23,11 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: str
+
+
+SECRET_KEY = "your_secret_key"  # Changez cela en une clé secrète sécurisée
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 def verify_password(plain_password, hashed_password):
@@ -73,6 +80,6 @@ def logout():
     # Pour une implémentation simple, vous pouvez simplement supprimer le token côté client.
     return {"detail": "Logged out successfully"}
 
-@router.get("/users/me/", response_model=User)
+@router.get("/me", response_model=User)
 def get_me(current_user: User = Depends(get_current_user)):
     return current_user

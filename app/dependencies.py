@@ -10,5 +10,5 @@ def get_session():
 
 SessionDep = Annotated[Session, Depends(get_session)]
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 engine = create_engine("sqlite:///db/database.db", connect_args={"check_same_thread": False})

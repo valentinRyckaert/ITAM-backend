@@ -1,7 +1,8 @@
 from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
 from typing import Annotated
 from ..db.database import Role
-from ..dependencies import SessionDep
+from ..dependencies import SessionDep, engine
+from sqlmodel import select
 
 router = APIRouter(
     prefix="/roles",

@@ -1,8 +1,10 @@
 from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
 from typing import Annotated
-from fastapi.responses import FileResponse
 from ..db.database import Device
-from ..dependencies import SessionDep
+from ..dependencies import SessionDep, engine
+from sqlmodel import select
+
+from fastapi.responses import FileResponse
 
 router = APIRouter(
     prefix="/devices",
@@ -57,6 +59,6 @@ def delete_device(device_id: int, session: SessionDep) -> dict:
     return {"detail": "Device deleted successfully"}
 
 @router.get("/{device_id}/deploy")
-def download_packages(device_id: int):
+def download_packages(device_id: int, session: SessionDep):
     for package in session.exec(select(Package).where(Package.P_for_device_id == device_id)):
         yield FileResponse(f"./deploy/{package.path}", media_type=package.type, filename=package.name)
