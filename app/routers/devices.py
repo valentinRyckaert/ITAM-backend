@@ -1,0 +1,62 @@
+from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
+from typing import Annotated
+from fastapi.responses import FileResponse
+from ..db.database import Device
+from ..dependencies import SessionDep
+
+router = APIRouter(
+    prefix="/devices",
+    tags=["devices"],
+    dependencies=[],
+    responses={404: {"description": "Not found"}},
+)
+
+@router.get("/", response_model=list[Device])
+def read_devices(
+    session: SessionDep,
+    offset: int = 0,
+    limit: Annotated[int, Query(le=100)] = 100,
+) -> list[Device]:
+    devices = session.exec(select(Device).offset(offset).limit(limit)).all()
+    return devices
+
+@router.post("/")
+def create_device(device: Device, session: SessionDep) -> Device:
+    session.add(device)
+    session.commit()
+    session.refresh(device)
+    return device
+
+@router.get("/{device_id}/", response_model=Device)
+def read_device(device_id: int, session: SessionDep) -> Device:
+    device = session.get(Device, device_id)
+    if not device:
+        return HTTPException(status_code=404, detail="Device not found")
+    return device
+
+@router.put("/{device_id}/", response_model=Device)
+def update_device(device_id: int, device: Device, session: SessionDep) -> Device:
+    db_device = session.get(Device, device_id)
+    if not db_device:
+        return HTTPException(status_code=404, detail="Device not found")
+    db_device.D_name = device.D_name
+    db_device.D_os = device.D_os
+    db_device.D_group_device_id = device.D_group_device_id
+    session.add(db_device)
+    session.commit()
+    session.refresh(db_device)
+    return db_device
+
+@router.delete("/{device_id}/delete/", response_model=dict)
+def delete_device(device_id: int, session: SessionDep) -> dict:
+    device = session.get(Device, device_id)
+    if not device:
+        return HTTPException(status_code=404, detail="Device not found")
+    session.delete(device)
+    session.commit()
+    return {"detail": "Device deleted successfully"}
+
+@router.get("/{device_id}/deploy")
+def download_packages(device_id: int):
+    for package in session.exec(select(Package).where(Package.P_for_device_id == device_id)):
+        yield FileResponse(f"./deploy/{package.path}", media_type=package.type, filename=package.name)
