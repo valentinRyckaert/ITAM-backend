@@ -1,8 +1,4 @@
-from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter, UploadFile, File
-from typing import Annotated
-from ..db.database import Package
-from ..dependencies import SessionDep, engine
-from sqlmodel import select
+from fastapi import Depends, FastAPI, HTTPException, APIRouter, UploadFile
 from ..internal.auth import get_current_user
 import os
 import shutil
@@ -25,9 +21,10 @@ async def create_package(file: UploadFile):
         shutil.copyfileobj(file.file, f)
     return file.filename
 
-@router.delete("/delete/", response_model=dict)
+@router.delete("/delete/")
 def delete_file(filename: str):
     if os.path.exists(os.path.join(UPLOAD_DIRECTORY, filename)):
         os.remove(os.path.join(UPLOAD_DIRECTORY, filename))
-    return {"status" : "removed successfuly"}
+        return {"status" : "removed successfuly"}
+    return HTTPException(status_code=404, detail="File not found")
 
