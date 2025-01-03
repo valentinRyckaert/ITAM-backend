@@ -3,11 +3,12 @@ from typing import Annotated
 from ..db.database import PackageGroup
 from ..dependencies import SessionDep, engine
 from sqlmodel import select
+from ..internal.auth import get_current_user
 
 router = APIRouter(
     prefix="/packagegroups",
     tags=["package_groups"],
-    dependencies=[],
+    dependencies=[Depends(get_current_user)],
     responses={404: {"description": "Not found"}},
 )
 

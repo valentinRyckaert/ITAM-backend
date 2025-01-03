@@ -5,11 +5,12 @@ from ..dependencies import SessionDep, engine
 from sqlmodel import select
 
 from fastapi.responses import FileResponse
+from ..internal.auth import get_current_user
 
 router = APIRouter(
     prefix="/devices",
     tags=["devices"],
-    dependencies=[],
+    dependencies=[Depends(get_current_user)],
     responses={404: {"description": "Not found"}},
 )
 

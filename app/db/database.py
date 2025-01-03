@@ -33,7 +33,8 @@ class User(SQLModel, table=True):
     U_id: int = Field(index=True, primary_key=True)
     U_username: str = Field(index=True)
     U_passHash: str = Field(index=True)
-    U_role_id: int = Field(index=True, foreign_key="role.R_id")
+    U_permissions: int = Field(index=True)
+    #U_role_id: int = Field(index=True, foreign_key="role.R_id")
 
 
 def create_db(engine):

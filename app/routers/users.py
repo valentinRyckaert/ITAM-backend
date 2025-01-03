@@ -3,11 +3,12 @@ from typing import Annotated
 from ..db.database import User
 from ..dependencies import SessionDep, engine
 from sqlmodel import select
+from ..internal.auth import verify_password, create_access_token, get_password_hash, get_current_user
 
 router = APIRouter(
     prefix="/users",
     tags=["users"],
-    dependencies=[],
+    dependencies=[Depends(get_current_user)],
     responses={404: {"description": "Not found"}},
 )
 

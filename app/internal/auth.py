@@ -8,7 +8,7 @@ from sqlmodel import select
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from ..db.database import DeviceGroup
 from ..dependencies import SessionDep, pwd_context, oauth2_scheme
-from ..db.database import User
+from ..db.database import User, Role
 
 router = APIRouter(
     prefix="/auth",
