@@ -61,18 +61,18 @@ def get_current_user(session: SessionDep, token: str = Depends(oauth2_scheme)):
     except JWTError:
         raise credentials_exception
 
-    user = session.exec(select(User).where(User.U_username == token_data.username)).first()
+    user = session.exec(select(User).where(User.USER_username == token_data.username)).first()
     if user is None:
         raise credentials_exception
     return user
 
 @router.post("/login", response_model=Token)
 def login(session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user = session.exec(select(User).where(User.U_username == form_data.username)).first()
-    if not user or not verify_password(form_data.password, user.U_passHash):
+    user = session.exec(select(User).where(User.USER_username == form_data.username)).first()
+    if not user or not verify_password(form_data.password, user.USER_passHash):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"username": user.U_username}, expires_delta=access_token_expires)
+    access_token = create_access_token(data={"username": user.USER_username}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/logout")

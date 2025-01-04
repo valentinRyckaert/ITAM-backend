@@ -14,7 +14,7 @@ router = APIRouter(
 
 @router.post("/", response_model=User)
 def create_user(user: User, session: SessionDep) -> User:
-    user.U_passHash = get_password_hash(user.U_passHash)
+    user.USER_passHash = get_password_hash(user.USER_passHash)
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -37,9 +37,11 @@ def update_user(user_id: int, user: User, session: SessionDep):
     if not db_user:
         return HTTPException(status_code=404, detail="User not found")
     
-    db_user.U_username = user.U_username
-    db_user.U_passHash = user.U_passHash
-    db_user.U_role_id = user.U_role_id
+    db_user.USER_username = user.USER_username
+    db_user.USER_passHash = user.USER_passHash
+    db_user.USER_role_id = user.U_role_id
+    db_user.USER_permissions = user.USER_permissions
+    db_user.USER_isActive = user.USER_isActive
     
     session.add(db_user)
     session.commit()

@@ -42,9 +42,9 @@ def update_device(device_id: int, device: Device, session: SessionDep):
     db_device = session.get(Device, device_id)
     if not db_device:
         return HTTPException(status_code=404, detail="Device not found")
-    db_device.D_name = device.D_name
-    db_device.D_os = device.D_os
-    db_device.D_group_device_id = device.D_group_device_id
+    db_device.DEV_name = device.DEV_name
+    db_device.DEV_os = device.DEV_os
+    db_device.DG_id = device.DG_id
     session.add(db_device)
     session.commit()
     session.refresh(db_device)

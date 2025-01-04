@@ -36,13 +36,12 @@ def update_package(package_id: int, package: Package, session: SessionDep):
     if not db_package:
         return HTTPException(status_code=404, detail="Package not found")
     
-    db_package.P_name = package.P_name
-    db_package.P_path = package.P_path
-    db_package.P_type = package.P_type
-    db_package.P_os_supported = package.P_os_supported
-    db_package.P_for_device_id = package.P_for_device_id
-    db_package.P_for_group_id = package.P_for_group_id
-    db_package.P_package_group_id = package.P_package_group_id
+    db_package.PACK_name = package.P_name
+    db_package.PACK_type = package.P_type
+    db_package.PACK_os_supported = package.P_os_supported
+    db_package.DEV_id = package.DEV_id
+    db_package.DG_id = package.DG_id
+    db_package.PG_id = package.PG_id
     
     session.add(db_package)
     session.commit()

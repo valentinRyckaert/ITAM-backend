@@ -37,8 +37,8 @@ def update_role(role_id: int, role: Role, session: SessionDep):
     if not db_role:
         return HTTPException(status_code=404, detail="Role not found")
     
-    db_role.R_libelle = role.R_libelle
-    db_role.R_permissions = role.R_permissions
+    db_role.ROL_libelle = role.ROL_libelle
+    db_role.ROL_perms = role.ROL_perms
     
     session.add(db_role)
     session.commit()
