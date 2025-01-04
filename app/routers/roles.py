@@ -31,8 +31,8 @@ def read_role(role_id: int, session: SessionDep) -> Role:
         return HTTPException(status_code=404, detail="Role not found")
     return role
 
-@router.put("/{role_id}", response_model=Role)
-def update_role(role_id: int, role: Role, session: SessionDep) -> Role:
+@router.put("/{role_id}")
+def update_role(role_id: int, role: Role, session: SessionDep):
     db_role = session.get(Role, role_id)
     if not db_role:
         return HTTPException(status_code=404, detail="Role not found")
@@ -46,8 +46,8 @@ def update_role(role_id: int, role: Role, session: SessionDep) -> Role:
     
     return db_role
 
-@router.delete("/{role_id}/delete/", response_model=dict)
-def delete_role(role_id: int, session: SessionDep) -> dict:
+@router.delete("/{role_id}/delete/")
+def delete_role(role_id: int, session: SessionDep):
     role = session.get(Role,    role_id)
     if not role:
         return HTTPException(status_code=404, detail="Role not found")

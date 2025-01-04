@@ -30,15 +30,15 @@ def create_device(device: Device, session: SessionDep) -> Device:
     session.refresh(device)
     return device
 
-@router.get("/{device_id}/", response_model=Device)
-def read_device(device_id: int, session: SessionDep) -> Device:
+@router.get("/{device_id}/")
+def read_device(device_id: int, session: SessionDep):
     device = session.get(Device, device_id)
     if not device:
         return HTTPException(status_code=404, detail="Device not found")
     return device
 
-@router.put("/{device_id}/", response_model=Device)
-def update_device(device_id: int, device: Device, session: SessionDep) -> Device:
+@router.put("/{device_id}/")
+def update_device(device_id: int, device: Device, session: SessionDep):
     db_device = session.get(Device, device_id)
     if not db_device:
         return HTTPException(status_code=404, detail="Device not found")
@@ -50,8 +50,8 @@ def update_device(device_id: int, device: Device, session: SessionDep) -> Device
     session.refresh(db_device)
     return db_device
 
-@router.delete("/{device_id}/delete/", response_model=dict)
-def delete_device(device_id: int, session: SessionDep) -> dict:
+@router.delete("/{device_id}/delete/")
+def delete_device(device_id: int, session: SessionDep):
     device = session.get(Device, device_id)
     if not device:
         return HTTPException(status_code=404, detail="Device not found")

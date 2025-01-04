@@ -24,15 +24,15 @@ def create_user(user: User, session: SessionDep) -> User:
 def read_users(session: SessionDep) -> list[User]:
     return session.exec(select(User)).all()
 
-@router.get("/{user_id}/", response_model=User)
-def read_user(user_id: int, session: SessionDep) -> User:
+@router.get("/{user_id}/")
+def read_user(user_id: int, session: SessionDep):
     user = session.get(User, user_id)
     if not user:
         return HTTPException(status_code=404, detail="User not found")
     return user
 
-@router.put("/{user_id}/", response_model=User)
-def update_user(user_id: int, user: User, session: SessionDep) -> User:
+@router.put("/{user_id}/")
+def update_user(user_id: int, user: User, session: SessionDep):
     db_user = session.get(User, user_id)
     if not db_user:
         return HTTPException(status_code=404, detail="User not found")
@@ -47,8 +47,8 @@ def update_user(user_id: int, user: User, session: SessionDep) -> User:
     
     return db_user
 
-@router.delete("/{user_id}/delete/", response_model=dict)
-def delete_user(user_id: int, session: SessionDep) -> dict:
+@router.delete("/{user_id}/delete/")
+def delete_user(user_id: int, session: SessionDep):
     user = session.get(User, user_id)
     if not user:
         return HTTPException(status_code=404, detail="User not found")

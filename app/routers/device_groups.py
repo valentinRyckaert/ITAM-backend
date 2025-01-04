@@ -23,15 +23,15 @@ def create_device_group(device_group: DeviceGroup, session: SessionDep) -> Devic
 def read_device_groups(session: SessionDep) -> list[DeviceGroup]:
     return session.exec(select(DeviceGroup)).all()
 
-@router.get("/{device_group_id}/", response_model=DeviceGroup)
-def read_device_group(device_group_id: int, session: SessionDep) -> DeviceGroup:
+@router.get("/{device_group_id}/")
+def read_device_group(device_group_id: int, session: SessionDep):
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
         return HTTPException(status_code=404, detail="device group not found") 
     return device_group
 
-@router.put("/{device_group_id}/", response_model=DeviceGroup)
-def update_device_group(device_group_id: int, device_group: DeviceGroup, session: SessionDep) -> DeviceGroup:
+@router.put("/{device_group_id}/")
+def update_device_group(device_group_id: int, device_group: DeviceGroup, session: SessionDep):
     db_device_group = session.get(DeviceGroup, device_group_id)
     if not db_device_group:
         return HTTPException(status_code=404, detail="device group not found") 
@@ -43,8 +43,8 @@ def update_device_group(device_group_id: int, device_group: DeviceGroup, session
     
     return db_device_group
 
-@router.delete("/{device_group_id}/delete/", response_model=dict)
-def delete_device_group(device_group_id: int, session: SessionDep) -> dict:
+@router.delete("/{device_group_id}/delete/")
+def delete_device_group(device_group_id: int, session: SessionDep):
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
         return HTTPException(status_code=404, detail="device group not found") 

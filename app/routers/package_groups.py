@@ -24,15 +24,15 @@ def create_package_group(package_group: PackageGroup, session: SessionDep) -> Pa
 def read_package_groups(session: SessionDep) -> list[PackageGroup]:
     return session.exec(select(PackageGroup)).all()
 
-@router.get("/{package_group_id}/", response_model=PackageGroup)
-def read_package_group(package_group_id: int, session: SessionDep) -> PackageGroup:
+@router.get("/{package_group_id}/")
+def read_package_group(package_group_id: int, session: SessionDep):
     package_group = session.get(PackageGroup, package_group_id)
     if not package_group:
         return HTTPException(status_code=404, detail="device group not found") 
     return package_group
 
-@router.put("/{package_group_id}/", response_model=PackageGroup)
-def update_package_group(package_group_id: int, package_group: PackageGroup, session: SessionDep) -> PackageGroup:
+@router.put("/{package_group_id}/")
+def update_package_group(package_group_id: int, package_group: PackageGroup, session: SessionDep):
     db_package_group = session.get(PackageGroup, package_group_id)
     if not db_package_group:
         return HTTPException(status_code=404, detail="device group not found") 
@@ -44,8 +44,8 @@ def update_package_group(package_group_id: int, package_group: PackageGroup, ses
     
     return db_package_group
 
-@router.delete("/{package_group_id}/delete/", response_model=dict)
-def delete_package_group(package_group_id: int, session: SessionDep) -> dict:
+@router.delete("/{package_group_id}/delete/")
+def delete_package_group(package_group_id: int, session: SessionDep):
     package_group = session.get(PackageGroup, package_group_id)
     if not package_group:
         return HTTPException(status_code=404, detail="device group not found") 

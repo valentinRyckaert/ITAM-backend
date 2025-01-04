@@ -23,15 +23,15 @@ def create_package(package: Package, session: SessionDep) -> Package:
 def read_packages(session: SessionDep) -> list[Package]:
     return session.exec(select(Package)).all()
 
-@router.get("/{package_id}/", response_model=Package)
-def read_package(package_id: int, session: SessionDep) -> Package:
+@router.get("/{package_id}/")
+def read_package(package_id: int, session: SessionDep):
     package = session.get(Package, package_id)
     if not package:
         return HTTPException(status_code=404, detail="Package not found")
     return package
 
-@router.put("/{package_id}/", response_model=Package)
-def update_package(package_id: int, package: Package, session: SessionDep) -> Package:
+@router.put("/{package_id}/")
+def update_package(package_id: int, package: Package, session: SessionDep):
     db_package = session.get(Package, package_id)
     if not db_package:
         return HTTPException(status_code=404, detail="Package not found")
@@ -50,8 +50,8 @@ def update_package(package_id: int, package: Package, session: SessionDep) -> Pa
     
     return db_package
 
-@router.delete("/{package_id}/delete/", response_model=dict)
-def delete_package(package_id: int, session: SessionDep) -> dict:
+@router.delete("/{package_id}/delete/")
+def delete_package(package_id: int, session: SessionDep):
     package = session.get(Package, package_id)
     if not package:
         return HTTPException(status_code=404, detail="Package not found")
