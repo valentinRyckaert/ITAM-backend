@@ -12,8 +12,10 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.post("/", response_model=Package)
-def create_package(package: Package, session: SessionDep) -> Package:
+@router.post("/")
+def create_package(package: Package, session: SessionDep):
+    if session.get(Package, package.PACK_id):
+        return HTTPException(status_code=400, detail="Package id already exists")
     session.add(package)
     session.commit()
     session.refresh(package)

@@ -13,8 +13,10 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=PackageGroup)
-def create_package_group(package_group: PackageGroup, session: SessionDep) -> PackageGroup:
+@router.post("/")
+def create_package_group(package_group: PackageGroup, session: SessionDep):
+    if session.get(PackageGroup, package_group.PG_id):
+        return HTTPException(status_code=400, detail="Package group id already exists")
     session.add(package_group)
     session.commit()
     session.refresh(package_group)

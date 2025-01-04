@@ -13,8 +13,10 @@ router = APIRouter(
 )
 
 
-@router.post("/", response_model=Role)
-def create_role(role: Role, session: SessionDep) -> Role:
+@router.post("/")
+def create_role(role: Role, session: SessionDep):
+    if session.get(Role, role.ROL_id):
+        return HTTPException(status_code=400, detail="Role id already exists")
     session.add(role)
     session.commit()
     session.refresh(role)

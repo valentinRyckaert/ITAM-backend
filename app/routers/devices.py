@@ -24,7 +24,9 @@ def read_devices(
     return devices
 
 @router.post("/")
-def create_device(device: Device, session: SessionDep) -> Device:
+def create_device(device: Device, session: SessionDep):
+    if session.get(Device, device.DEV_id):
+        return HTTPException(status_code=400, detail="Device id already exists")
     session.add(device)
     session.commit()
     session.refresh(device)

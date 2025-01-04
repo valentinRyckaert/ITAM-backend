@@ -12,8 +12,10 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.post("/", response_model=DeviceGroup)
-def create_device_group(device_group: DeviceGroup, session: SessionDep) -> DeviceGroup:
+@router.post("/")
+def create_device_group(device_group: DeviceGroup, session: SessionDep):
+    if session.get(DeviceGroup, device_group.DG_id):
+        return HTTPException(status_code=400, detail="Device group id already exists")
     session.add(device_group)
     session.commit()
     session.refresh(device_group)

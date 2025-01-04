@@ -12,8 +12,10 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-@router.post("/", response_model=User)
-def create_user(user: User, session: SessionDep) -> User:
+@router.post("/")
+def create_user(user: User, session: SessionDep):
+    if session.get(User, user.USER_id):
+        return HTTPException(status_code=400, detail="User id already exists")
     user.USER_passHash = get_password_hash(user.USER_passHash)
     session.add(user)
     session.commit()
