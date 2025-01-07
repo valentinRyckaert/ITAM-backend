@@ -23,21 +23,12 @@ class Package(SQLModel, table=True):
     DG_id: int | None = Field(default=None, index=True, foreign_key="devicegroup.DG_id")
     PG_id: int | None = Field(default=None, index=True, foreign_key="packagegroup.PG_id")
 
-
-class Role(SQLModel, table=True):               
-    ROL_id: int = Field(default=None, index=True, primary_key=True)
-    ROL_libelle: str = Field(index=True)
-    ROL_perms: int = Field(index=True)
-
-
 class User(SQLModel, table=True):
     USER_id: int = Field(index=True, primary_key=True)
     USER_username: str = Field(index=True)
     USER_passHash: str = Field(index=True)
-    USER_permissions: int = Field(index=True)
     USER_isActive: bool = Field(index=True)
-    #ROL_perms: int = Field(index=True, foreign_key="role.ROL_perms")
-
+    USER_perms: int = Field(index=True)
 
 def create_db(engine):
     SQLModel.metadata.create_all(engine)

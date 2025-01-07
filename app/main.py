@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from .routers import devices, device_groups, packages, package_groups, roles, users, files
+from .routers import devices, device_groups, packages, package_groups, users, files
 from .db.database import create_db
 from .internal import auth
 from .dependencies import *
@@ -11,7 +11,6 @@ app.include_router(device_groups.router)
 app.include_router(packages.router)
 app.include_router(files.router)
 app.include_router(package_groups.router)
-app.include_router(roles.router)
 app.include_router(users.router)
 app.include_router(auth.router)
 
