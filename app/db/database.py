@@ -27,8 +27,8 @@ class User(SQLModel, table=True):
     USER_id: int = Field(index=True, primary_key=True)
     USER_username: str = Field(index=True)
     USER_passHash: str = Field(index=True)
+    USER_type: int = Field(index=True)
     USER_isActive: bool = Field(index=True)
-    USER_perms: int = Field(index=True)
 
 def create_db(engine):
     SQLModel.metadata.create_all(engine)
