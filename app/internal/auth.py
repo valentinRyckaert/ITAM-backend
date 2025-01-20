@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
+from fastapi.responses import RedirectResponse
 from typing import Annotated
 from pydantic import BaseModel
 from typing import Optional
@@ -66,8 +67,8 @@ def get_current_user(session: SessionDep, token: str = Depends(oauth2_scheme)):
         raise credentials_exception
     return user
 
-def verify_access(accountNumber: int, user: User):
-    if accountNumber < user.USER_type:
+async def verify_access(accountNumber: int):
+    if accountNumber < (await get_current_user(SessionDep)).USER_type:
         raise HTTPException(status_code=400, detail="Incorrect rights")
 
 @router.post("/login", response_model=Token)
@@ -78,14 +79,13 @@ def login(session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, D
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"username": user.USER_username},
-        expires_delta=access_token_expires
+        expires_delta=access_token_expires,
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/logout")
 def logout():
-    # Pour une implémentation simple, vous pouvez simplement supprimer le token côté client.
-    return {"detail": "Logged out successfully"}
+    ...
 
 @router.get("/me", response_model=User)
 def get_me(current_user: User = Depends(get_current_user)):
