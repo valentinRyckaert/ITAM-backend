@@ -24,7 +24,7 @@ async def create_package(file: UploadFile):
         shutil.copyfileobj(file.file, f)
     return file.filename
 
-@router.delete("/delete/")
+@router.delete("/{filename}/delete/")
 def delete_file(filename: str):
     verify_access(1)
     file_location = os.path.join(UPLOAD_DIRECTORY, filename)
