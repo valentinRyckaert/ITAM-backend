@@ -3,7 +3,7 @@ from typing import Annotated
 from ..db.database import DeviceGroup
 from ..dependencies import SessionDep, engine
 from sqlmodel import select
-from ..internal.auth import get_current_user
+from ..internal.auth import get_current_user, verify_access
 
 router = APIRouter(
     prefix="/devicegroups",
@@ -14,6 +14,7 @@ router = APIRouter(
 
 @router.post("/")
 def create_device_group(device_group: DeviceGroup, session: SessionDep):
+    verify_access(1)
     if session.get(DeviceGroup, device_group.DG_id):
         return HTTPException(status_code=400, detail="Device group id already exists")
     session.add(device_group)
@@ -23,10 +24,12 @@ def create_device_group(device_group: DeviceGroup, session: SessionDep):
 
 @router.get("/", response_model=list[DeviceGroup])
 def read_device_groups(session: SessionDep) -> list[DeviceGroup]:
+    verify_access(2)
     return session.exec(select(DeviceGroup)).all()
 
 @router.get("/{device_group_id}/")
 def read_device_group(device_group_id: int, session: SessionDep):
+    verify_access(2)
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
         return HTTPException(status_code=404, detail="device group not found") 
@@ -34,6 +37,7 @@ def read_device_group(device_group_id: int, session: SessionDep):
 
 @router.put("/{device_group_id}/")
 def update_device_group(device_group_id: int, device_group: DeviceGroup, session: SessionDep):
+    verify_access(1)
     db_device_group = session.get(DeviceGroup, device_group_id)
     if not db_device_group:
         return HTTPException(status_code=404, detail="device group not found") 
@@ -47,6 +51,7 @@ def update_device_group(device_group_id: int, device_group: DeviceGroup, session
 
 @router.delete("/{device_group_id}/delete/")
 def delete_device_group(device_group_id: int, session: SessionDep):
+    verify_access(1)
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
         return HTTPException(status_code=404, detail="device group not found") 

@@ -14,6 +14,7 @@ router = APIRouter(
 
 @router.post("/")
 def create_user(user: User, session: SessionDep):
+    verify_access(0)
     if session.get(User, user.USER_id):
         return HTTPException(status_code=400, detail="User id already exists")
     user.USER_passHash = get_password_hash(user.USER_passHash)
@@ -24,10 +25,12 @@ def create_user(user: User, session: SessionDep):
 
 @router.get("/", response_model=list[User])
 def read_users(session: SessionDep) -> list[User]:
+    verify_access(0)
     return session.exec(select(User)).all()
 
 @router.get("/{user_id}/")
 def read_user(user_id: int, session: SessionDep):
+    verify_access(0)
     user = session.get(User, user_id)
     if not user:
         return HTTPException(status_code=404, detail="User not found")
@@ -35,6 +38,7 @@ def read_user(user_id: int, session: SessionDep):
 
 @router.put("/{user_id}/")
 def update_user(user_id: int, user: User, session: SessionDep):
+    verify_access(0)
     db_user = session.get(User, user_id)
     if not db_user:
         return HTTPException(status_code=404, detail="User not found")
@@ -53,6 +57,7 @@ def update_user(user_id: int, user: User, session: SessionDep):
 
 @router.delete("/{user_id}/delete/")
 def delete_user(user_id: int, session: SessionDep):
+    verify_access(0)
     user = session.get(User, user_id)
     if not user:
         return HTTPException(status_code=404, detail="User not found")

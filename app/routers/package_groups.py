@@ -3,7 +3,7 @@ from typing import Annotated
 from ..db.database import PackageGroup
 from ..dependencies import SessionDep, engine
 from sqlmodel import select
-from ..internal.auth import get_current_user
+from ..internal.auth import get_current_user, verify_access
 
 router = APIRouter(
     prefix="/packagegroups",
@@ -15,6 +15,7 @@ router = APIRouter(
 
 @router.post("/")
 def create_package_group(package_group: PackageGroup, session: SessionDep):
+    verify_access(1)
     if session.get(PackageGroup, package_group.PG_id):
         return HTTPException(status_code=400, detail="Package group id already exists")
     session.add(package_group)
@@ -24,10 +25,12 @@ def create_package_group(package_group: PackageGroup, session: SessionDep):
 
 @router.get("/", response_model=list[PackageGroup])
 def read_package_groups(session: SessionDep) -> list[PackageGroup]:
+    verify_access(2)
     return session.exec(select(PackageGroup)).all()
 
 @router.get("/{package_group_id}/")
 def read_package_group(package_group_id: int, session: SessionDep):
+    verify_access(2)
     package_group = session.get(PackageGroup, package_group_id)
     if not package_group:
         return HTTPException(status_code=404, detail="device group not found") 
@@ -35,6 +38,7 @@ def read_package_group(package_group_id: int, session: SessionDep):
 
 @router.put("/{package_group_id}/")
 def update_package_group(package_group_id: int, package_group: PackageGroup, session: SessionDep):
+    verify_access(1)
     db_package_group = session.get(PackageGroup, package_group_id)
     if not db_package_group:
         return HTTPException(status_code=404, detail="device group not found") 
@@ -48,6 +52,7 @@ def update_package_group(package_group_id: int, package_group: PackageGroup, ses
 
 @router.delete("/{package_group_id}/delete/")
 def delete_package_group(package_group_id: int, session: SessionDep):
+    verify_access(1)
     package_group = session.get(PackageGroup, package_group_id)
     if not package_group:
         return HTTPException(status_code=404, detail="device group not found") 

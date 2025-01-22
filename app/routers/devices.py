@@ -1,11 +1,12 @@
 from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
 from typing import Annotated
-from ..db.database import Device, User
+from ..db.database import Device, User, Package
 from ..dependencies import SessionDep, engine
 from sqlmodel import select
 
 from fastapi.responses import FileResponse
 from ..internal.auth import get_current_user, verify_access
+from os.path import join
 
 router = APIRouter(
     prefix="/devices",
@@ -27,7 +28,7 @@ def read_devices(
 
 @router.post("/")
 def create_device(device: Device, session: SessionDep):
-    verify_access(1)
+    verify_access(3)
     if session.get(Device, device.DEV_id):
         return HTTPException(status_code=400, detail="Device id already exists")
     session.add(device)
@@ -45,7 +46,7 @@ def read_device(device_id: int, session: SessionDep):
 
 @router.put("/{device_id}/")
 def update_device(device_id: int, device: Device, session: SessionDep):
-    verify_access(1)
+    verify_access(3)
     db_device = session.get(Device, device_id)
     if not db_device:
         return HTTPException(status_code=404, detail="Device not found")
@@ -69,6 +70,6 @@ def delete_device(device_id: int, session: SessionDep):
 
 @router.get("/{device_id}/deploy")
 def download_packages(device_id: int, session: SessionDep):
-    verify_access(1)
-    for package in session.exec(select(Package).where(Package.P_for_device_id == device_id)):
-        yield FileResponse(f"./deploy/{package.path}", media_type=package.type, filename=package.name)
+    verify_access(3)
+    for package in session.exec(select(Package).where(Package.DEV_id == device_id)):
+        yield FileResponse(path=join("..deploy", package.PACK_name), filename=package.PACK_name)

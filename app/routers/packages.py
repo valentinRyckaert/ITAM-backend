@@ -3,7 +3,7 @@ from typing import Annotated
 from ..db.database import Package
 from ..dependencies import SessionDep, engine
 from sqlmodel import select
-from ..internal.auth import get_current_user
+from ..internal.auth import get_current_user, verify_access
 
 router = APIRouter(
     prefix="/packages",
@@ -14,6 +14,7 @@ router = APIRouter(
 
 @router.post("/")
 def create_package(package: Package, session: SessionDep):
+    verify_access(1)
     if session.get(Package, package.PACK_id):
         return HTTPException(status_code=400, detail="Package id already exists")
     session.add(package)
@@ -23,10 +24,12 @@ def create_package(package: Package, session: SessionDep):
 
 @router.get("/", response_model=list[Package])
 def read_packages(session: SessionDep) -> list[Package]:
+    verify_access(2)
     return session.exec(select(Package)).all()
 
 @router.get("/{package_id}/")
 def read_package(package_id: int, session: SessionDep):
+    verify_access(2)
     package = session.get(Package, package_id)
     if not package:
         return HTTPException(status_code=404, detail="Package not found")
@@ -34,6 +37,7 @@ def read_package(package_id: int, session: SessionDep):
 
 @router.put("/{package_id}/")
 def update_package(package_id: int, package: Package, session: SessionDep):
+    verify_access(1)
     db_package = session.get(Package, package_id)
     if not db_package:
         return HTTPException(status_code=404, detail="Package not found")
@@ -53,6 +57,7 @@ def update_package(package_id: int, package: Package, session: SessionDep):
 
 @router.delete("/{package_id}/delete/")
 def delete_package(package_id: int, session: SessionDep):
+    verify_access(1)
     package = session.get(Package, package_id)
     if not package:
         return HTTPException(status_code=404, detail="Package not found")
