@@ -5,6 +5,8 @@ from ..dependencies import SessionDep, engine
 from sqlmodel import select
 from ..internal.auth import get_current_user, verify_access
 
+import os
+
 router = APIRouter(
     prefix="/packages",
     tags=["packages"],
@@ -66,3 +68,24 @@ def delete_package(package_id: int, session: SessionDep):
     session.commit()
     
     return {"detail": "Package deleted successfully"}
+
+@router.get("/autoupdate")
+def auto_update(session: SessionDep):
+    verify_access(1)
+    filenameInDB = []
+    for packageInDB in session.exec(select(Package)).all():
+        filenameInDB.append(packageInDB.PACK_name)
+    fichiers = os.listdir("db/deploy/")
+    for fichier in fichiers:
+        if os.path.isfile(os.path.join("db/deploy/", fichier)) and not (fichier in filenameInDB):
+            nom, extension = os.path.splitext(fichier)
+            package = Package(
+                PACK_id = 8395839,
+                PACK_name = nom,
+                PACK_type = extension,
+                PACK_os_supported = "any"
+            )
+            session.add(package)
+            session.commit()
+            session.refresh(package)
+    return {"detail":"autoupdate successful"}
