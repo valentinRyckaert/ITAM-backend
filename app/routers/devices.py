@@ -6,12 +6,15 @@ from sqlmodel import select
 
 from fastapi.responses import FileResponse
 from ..internal.auth import get_current_user, verify_access
-from os.path import join
+import os
+import zipfile as zf
+import io
+from fastapi.responses import StreamingResponse
 
 router = APIRouter(
     prefix="/devices",
     tags=["devices"],
-    dependencies=[Depends(get_current_user)],
+    #dependencies=[Depends(get_current_user)],
     responses={404: {"description": "Not found"}},
 )
 
@@ -60,7 +63,7 @@ def update_device(device_id: int, device: Device, session: SessionDep):
 
 @router.delete("/{device_id}/delete/")
 def delete_device(device_id: int, session: SessionDep):
-    verify_access(1)
+    verify_access(1) 
     device = session.get(Device, device_id)
     if not device:
         return HTTPException(status_code=404, detail="Device not found")
@@ -68,8 +71,21 @@ def delete_device(device_id: int, session: SessionDep):
     session.commit()
     return {"detail": "Device deleted successfully"}
 
+def zipfiles(filenames):
+    zip_io = io.BytesIO()
+    with zf.ZipFile(zip_io, mode='w', compression=zf.ZIP_DEFLATED) as temp_zip:
+        for name in filenames:
+            temp_zip.write(f"db/deploy/{name}")
+    return StreamingResponse(
+        iter([zip_io.getvalue()]), 
+        media_type="application/x-zip-compressed", 
+        headers = { "Content-Disposition": f"attachment; filename=archive.zip"}
+    )
+
 @router.get("/{device_id}/deploy")
 def download_packages(device_id: int, session: SessionDep):
-    verify_access(3)
+    #verify_access(3)
+    filepaths = []
     for package in session.exec(select(Package).where(Package.DEV_id == device_id)):
-        yield FileResponse(path=join("..deploy", package.PACK_name), filename=package.PACK_name)
+        filepaths.append(package.PACK_name)
+    return zipfiles(filepaths)
