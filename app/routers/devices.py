@@ -14,7 +14,7 @@ from fastapi.responses import StreamingResponse
 router = APIRouter(
     prefix="/devices",
     tags=["devices"],
-    #dependencies=[Depends(get_current_user)],
+    dependencies=[Depends(get_current_user)],
     responses={404: {"description": "Not found"}},
 )
 
@@ -71,6 +71,7 @@ def delete_device(device_id: int, session: SessionDep):
     session.commit()
     return {"detail": "Device deleted successfully"}
 
+
 def zipfiles(filenames):
     zip_io = io.BytesIO()
     with zf.ZipFile(zip_io, mode='w', compression=zf.ZIP_DEFLATED) as temp_zip:
@@ -84,7 +85,7 @@ def zipfiles(filenames):
 
 @router.get("/{device_id}/deploy")
 def download_packages(device_id: int, session: SessionDep):
-    #verify_access(3)
+    verify_access(3)
     filepaths = []
     for package in session.exec(select(Package).where(Package.DEV_id == device_id)):
         filepaths.append(package.PACK_name)
