@@ -6,5 +6,5 @@
 
 ## docker connection to mariadb
 ```shell
-docker run --detach --name itam-mariadb --env MARIADB_USER=user --env MARIADB_PASSWORD=123+aze --env MARIADB_DATABASE=itamweb --env MARIADB_ROOT_PASSWORD=rootpass  mariadb:latest
+docker run --detach --name itam-mariadb -p 3306:3306 --env MARIADB_USER=user --env MARIADB_PASSWORD=123+aze --env MARIADB_DATABASE=itamweb --env MARIADB_ROOT_PASSWORD=rootpass  mariadb:latest
 ```
