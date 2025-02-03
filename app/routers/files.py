@@ -11,7 +11,7 @@ router = APIRouter(
 )
 
 
-UPLOAD_DIRECTORY = "db/deploy"
+UPLOAD_DIRECTORY = "app/db/deploy"
 
 
 @router.post("/")

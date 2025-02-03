@@ -75,12 +75,12 @@ def auto_update(session: SessionDep):
     filenameInDB = []
     for packageInDB in session.exec(select(Package)).all():
         filenameInDB.append(packageInDB.PACK_name)
-    fichiers = os.listdir("db/deploy/")
+    fichiers = os.listdir("app/db/deploy/")
     for fichier in fichiers:
-        if os.path.isfile(os.path.join("db/deploy/", fichier)) and not (fichier in filenameInDB):
+        if os.path.isfile(os.path.join("app/db/deploy/", fichier)) and not (fichier in filenameInDB):
             nom, extension = os.path.splitext(fichier)
             package = Package(
-                PACK_id = 8395839,
+                PACK_id = None,
                 PACK_name = nom,
                 PACK_type = extension,
                 PACK_os_supported = "any"
