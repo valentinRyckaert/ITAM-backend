@@ -88,4 +88,7 @@ def auto_update(session: SessionDep):
             session.add(package)
             session.commit()
             session.refresh(package)
+        if not os.path.isfile(os.path.join("app/db/deploy/", fichier)) and (fichier in filenameInDB):
+            session.delete(package)
+            session.commit()
     return {"detail":"autoupdate successful"}
