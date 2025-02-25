@@ -1,11 +1,12 @@
 from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
 from typing import Annotated
 from ..db.database import Device, User, Package
-from ..dependencies import SessionDep, engine, logger
+from ..dependencies import SessionDep, engine, get_current_user
+from ..internal.logger import logger
 from sqlmodel import select
 
 from fastapi.responses import FileResponse
-from ..internal.auth import get_current_user, verify_access
+from ..internal.auth import verify_access
 import os
 import zipfile as zf
 import io

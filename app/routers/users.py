@@ -1,9 +1,10 @@
 from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
 from typing import Annotated
 from ..db.database import User
-from ..dependencies import SessionDep, engine, logger
+from ..dependencies import SessionDep, engine, get_current_user
+from ..internal.logger import logger
 from sqlmodel import select
-from ..internal.auth import verify_password, create_access_token, get_password_hash, get_current_user, verify_access
+from ..internal.auth import verify_password, create_access_token, get_password_hash, verify_access
 
 router = APIRouter(
     prefix="/users",

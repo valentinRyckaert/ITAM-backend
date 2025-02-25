@@ -8,13 +8,13 @@ from jose import JWTError, jwt
 from sqlmodel import select
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from ..db.database import DeviceGroup
-from ..dependencies import SessionDep, pwd_context, oauth2_scheme, logger
+from ..dependencies import SessionDep, pwd_context, oauth2_scheme, get_current_user, ALGORITHM, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, TokenData
+from ..internal.logger import logger
 from ..db.database import User
 
 router = APIRouter(
     prefix="/auth",
     tags=["auth"],
-    dependencies=[],
     responses={404: {"description": "Not found"}},
 )
 
@@ -22,12 +22,6 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
-class TokenData(BaseModel):
-    username: str
-
-SECRET_KEY = "your_secret_key"  # Changez cela en une clé secrète sécurisée
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 def verify_password(plain_password, hashed_password):
     """
@@ -74,36 +68,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def get_current_user(session: SessionDep, token: str = Depends(oauth2_scheme)):
-    """
-    Get the current user based on the provided token.
-
-    Args:
-        session (SessionDep): The database session.
-        token (str): The JWT token.
-
-    Returns:
-        User: The current user.
-    """
-    credentials_exception = HTTPException(
-        status_code=401,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("username")
-        if username is None:
-            raise credentials_exception
-        token_data = TokenData(username=username)
-    except JWTError:
-        raise credentials_exception
-
-    user = session.exec(select(User).where(User.USER_username == token_data.username)).first()
-    if user is None:
-        raise credentials_exception
-    return user
-
 async def verify_access(accountNumber: int):
     """
     Verify if the current user has the required access level.
@@ -114,6 +78,8 @@ async def verify_access(accountNumber: int):
     if accountNumber < (await get_current_user(SessionDep)).USER_type:
         logger.warning("Incorrect rights.")
         raise HTTPException(status_code=400, detail="Incorrect rights")
+
+
 
 @router.post("/login", response_model=Token)
 def login(session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):

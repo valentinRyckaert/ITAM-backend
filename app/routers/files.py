@@ -1,6 +1,7 @@
 from fastapi import Depends, FastAPI, HTTPException, APIRouter, UploadFile
-from ..internal.auth import get_current_user, verify_access
-from ..dependencies import logger
+from ..internal.auth import verify_access
+from ..dependencies import get_current_user
+from ..internal.logger import logger
 import os
 import shutil
 
