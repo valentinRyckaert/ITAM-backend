@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
 from typing import Annotated
 from ..db.database import DeviceGroup
-from ..dependencies import SessionDep, engine
+from ..dependencies import SessionDep, engine, logger
 from sqlmodel import select
 from ..internal.auth import get_current_user, verify_access
 
@@ -14,49 +14,106 @@ router = APIRouter(
 
 @router.post("/")
 def create_device_group(device_group: DeviceGroup, session: SessionDep):
+    """
+    Create a new device group.
+
+    Args:
+        device_group (DeviceGroup): The device group to create.
+        session (SessionDep): The database session.
+
+    Returns:
+        DeviceGroup: The created device group.
+    """
     verify_access(1)
     if session.get(DeviceGroup, device_group.DG_id):
+        logger.warning("Device group id already exists")
         return HTTPException(status_code=400, detail="Device group id already exists")
     session.add(device_group)
     session.commit()
     session.refresh(device_group)
+    logger.warning("Device group created successfully")
     return device_group
 
 @router.get("/", response_model=list[DeviceGroup])
 def read_device_groups(session: SessionDep) -> list[DeviceGroup]:
+    """
+    Read all device groups.
+
+    Args:
+        session (SessionDep): The database session.
+
+    Returns:
+        list[DeviceGroup]: A list of device groups.
+    """
     verify_access(2)
+    logger.warning("Reading all device groups")
     return session.exec(select(DeviceGroup)).all()
 
 @router.get("/{device_group_id}/")
 def read_device_group(device_group_id: int, session: SessionDep):
+    """
+    Read a specific device group by ID.
+
+    Args:
+        device_group_id (int): The ID of the device group to read.
+        session (SessionDep): The database session.
+
+    Returns:
+        DeviceGroup: The device group with the specified ID.
+    """
     verify_access(2)
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
-        return HTTPException(status_code=404, detail="device group not found") 
+        logger.warning("Device group not found")
+        return HTTPException(status_code=404, detail="device group not found")
+    logger.warning("Device group read successfully")
     return device_group
 
 @router.put("/{device_group_id}/")
 def update_device_group(device_group_id: int, device_group: DeviceGroup, session: SessionDep):
+    """
+    Update a specific device group by ID.
+
+    Args:
+        device_group_id (int): The ID of the device group to update.
+        device_group (DeviceGroup): The updated device group data.
+        session (SessionDep): The database session.
+
+    Returns:
+        DeviceGroup: The updated device group.
+    """
     verify_access(1)
     db_device_group = session.get(DeviceGroup, device_group_id)
     if not db_device_group:
-        return HTTPException(status_code=404, detail="device group not found") 
-    
+        logger.warning("Device group not found")
+        return HTTPException(status_code=404, detail="device group not found")
+
     db_device_group.DG_libelle = device_group.DG_libelle
     session.add(db_device_group)
     session.commit()
     session.refresh(db_device_group)
-    
+    logger.warning("Device group updated successfully")
     return db_device_group
 
 @router.delete("/{device_group_id}/delete/")
 def delete_device_group(device_group_id: int, session: SessionDep):
+    """
+    Delete a specific device group by ID.
+
+    Args:
+        device_group_id (int): The ID of the device group to delete.
+        session (SessionDep): The database session.
+
+    Returns:
+        dict: A message indicating the success of the deletion.
+    """
     verify_access(1)
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
-        return HTTPException(status_code=404, detail="device group not found") 
-    
+        logger.warning("Device group not found")
+        return HTTPException(status_code=404, detail="device group not found")
+
     session.delete(device_group)
     session.commit()
-    
+    logger.warning("Device group deleted successfully")
     return {"detail": "DeviceGroup deleted successfully"}
