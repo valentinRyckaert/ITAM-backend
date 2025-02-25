@@ -1,11 +1,13 @@
 from sqlmodel import Session, create_engine, select
 from typing import Annotated
 from pydantic import BaseModel
-from fastapi import Depends
+from fastapi import Depends, HTTPException
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi.security import OAuth2PasswordBearer
 from os import getenv
 from dotenv import load_dotenv
+from .db.database import User
 
 def get_session():
     with Session(engine) as session:

@@ -1,6 +1,6 @@
-from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
+from fastapi import Request, Depends, FastAPI, HTTPException, Query, status, APIRouter
 from typing import Annotated
-from ..db.database import PackageGroup
+from ..db.database import User, PackageGroup
 from ..dependencies import SessionDep, engine, get_current_user
 from ..internal.logger import logger
 from sqlmodel import select
@@ -9,12 +9,11 @@ from ..internal.auth import verify_access
 router = APIRouter(
     prefix="/packagegroups",
     tags=["package_groups"],
-    dependencies=[Depends(get_current_user)],
     responses={404: {"description": "Not found"}},
 )
 
 @router.post("/")
-def create_package_group(package_group: PackageGroup, session: SessionDep):
+def create_package_group(package_group: PackageGroup, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
     """
     Create a new package group.
 
@@ -27,16 +26,26 @@ def create_package_group(package_group: PackageGroup, session: SessionDep):
     """
     verify_access(1)
     if session.get(PackageGroup, package_group.PG_id):
-        logger.warning("Package group id already exists.")
+        logger.warning("Package group id already exists.", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': user.USER_username
+        })
         return HTTPException(status_code=400, detail="Package group id already exists")
     session.add(package_group)
     session.commit()
     session.refresh(package_group)
-    logger.warning("Package group created successfully.")
+    logger.warning("Package group created successfully.", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': user.USER_username
+    })
     return package_group
 
 @router.get("/", response_model=list[PackageGroup])
-def read_package_groups(session: SessionDep) -> list[PackageGroup]:
+def read_package_groups(session: SessionDep, request: Request, user: User = Depends(get_current_user)) -> list[PackageGroup]:
     """
     Retrieve a list of all package groups.
 
@@ -48,11 +57,16 @@ def read_package_groups(session: SessionDep) -> list[PackageGroup]:
     """
     verify_access(2)
     package_groups = session.exec(select(PackageGroup)).all()
-    logger.warning("Package groups read successfully.")
+    logger.warning("Package groups read successfully.", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': user.USER_username
+    })
     return package_groups
 
 @router.get("/{package_group_id}/")
-def read_package_group(package_group_id: int, session: SessionDep):
+def read_package_group(package_group_id: int, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
     """
     Retrieve a package group by its ID.
 
@@ -66,13 +80,23 @@ def read_package_group(package_group_id: int, session: SessionDep):
     verify_access(2)
     package_group = session.get(PackageGroup, package_group_id)
     if not package_group:
-        logger.warning("Package group not found.")
+        logger.warning("Package group not found.", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': user.USER_username
+        })
         return HTTPException(status_code=404, detail="Package group not found")
-    logger.warning("Package group read successfully.")
+    logger.warning("Package group read successfully.", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': user.USER_username
+    })
     return package_group
 
 @router.put("/{package_group_id}/")
-def update_package_group(package_group_id: int, package_group: PackageGroup, session: SessionDep):
+def update_package_group(package_group_id: int, package_group: PackageGroup, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
     """
     Update an existing package group.
 
@@ -87,17 +111,27 @@ def update_package_group(package_group_id: int, package_group: PackageGroup, ses
     verify_access(1)
     db_package_group = session.get(PackageGroup, package_group_id)
     if not db_package_group:
-        logger.warning("Package group not found.")
+        logger.warning("Package group not found.", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': user.USER_username
+        })
         return HTTPException(status_code=404, detail="Package group not found")
     db_package_group.PG_libelle = package_group.PG_libelle
     session.add(db_package_group)
     session.commit()
     session.refresh(db_package_group)
-    logger.warning("Package group updated successfully.")
+    logger.warning("Package group updated successfully.", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': user.USER_username
+    })
     return db_package_group
 
 @router.delete("/{package_group_id}/delete/")
-def delete_package_group(package_group_id: int, session: SessionDep):
+def delete_package_group(package_group_id: int, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
     """
     Delete a package group by its ID.
 
@@ -111,9 +145,19 @@ def delete_package_group(package_group_id: int, session: SessionDep):
     verify_access(1)
     package_group = session.get(PackageGroup, package_group_id)
     if not package_group:
-        logger.warning("Package group not found.")
+        logger.warning("Package group not found.", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': user.USER_username
+        })
         return HTTPException(status_code=404, detail="Package group not found")
     session.delete(package_group)
     session.commit()
-    logger.warning("Package group deleted successfully.")
+    logger.warning("Package group deleted successfully.", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': user.USER_username
+    })
     return {"detail": "PackageGroup deleted successfully"}

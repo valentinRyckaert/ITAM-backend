@@ -1,6 +1,6 @@
-from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
+from fastapi import Request, Depends, FastAPI, HTTPException, Query, status, APIRouter
 from typing import Annotated
-from ..db.database import DeviceGroup
+from ..db.database import User, DeviceGroup
 from ..dependencies import SessionDep, engine, get_current_user
 from ..internal.logger import logger
 from sqlmodel import select
@@ -9,12 +9,11 @@ from ..internal.auth import verify_access
 router = APIRouter(
     prefix="/devicegroups",
     tags=["device_groups"],
-    dependencies=[Depends(get_current_user)],
     responses={404: {"description": "Not found"}},
 )
 
 @router.post("/")
-def create_device_group(device_group: DeviceGroup, session: SessionDep):
+def create_device_group(device_group: DeviceGroup, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
     """
     Create a new device group.
 
@@ -27,16 +26,26 @@ def create_device_group(device_group: DeviceGroup, session: SessionDep):
     """
     verify_access(1)
     if session.get(DeviceGroup, device_group.DG_id):
-        logger.warning("Device group id already exists")
+        logger.warning("Device group id already exists", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': user.USER_username
+        })
         return HTTPException(status_code=400, detail="Device group id already exists")
     session.add(device_group)
     session.commit()
     session.refresh(device_group)
-    logger.warning("Device group created successfully")
+    logger.warning("Device group created successfully", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': user.USER_username
+    })
     return device_group
 
 @router.get("/", response_model=list[DeviceGroup])
-def read_device_groups(session: SessionDep) -> list[DeviceGroup]:
+def read_device_groups(session: SessionDep, request: Request, user: User = Depends(get_current_user)) -> list[DeviceGroup]:
     """
     Read all device groups.
 
@@ -47,11 +56,16 @@ def read_device_groups(session: SessionDep) -> list[DeviceGroup]:
         list[DeviceGroup]: A list of device groups.
     """
     verify_access(2)
-    logger.warning("Reading all device groups")
+    logger.warning("Reading all device groups", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': user.USER_username
+    })
     return session.exec(select(DeviceGroup)).all()
 
 @router.get("/{device_group_id}/")
-def read_device_group(device_group_id: int, session: SessionDep):
+def read_device_group(device_group_id: int, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
     """
     Read a specific device group by ID.
 
@@ -65,13 +79,23 @@ def read_device_group(device_group_id: int, session: SessionDep):
     verify_access(2)
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
-        logger.warning("Device group not found")
+        logger.warning("Device group not found", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': user.USER_username
+        })
         return HTTPException(status_code=404, detail="device group not found")
-    logger.warning("Device group read successfully")
+    logger.warning("Device group read successfully", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': user.USER_username
+    })
     return device_group
 
 @router.put("/{device_group_id}/")
-def update_device_group(device_group_id: int, device_group: DeviceGroup, session: SessionDep):
+def update_device_group(device_group_id: int, device_group: DeviceGroup, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
     """
     Update a specific device group by ID.
 
@@ -86,18 +110,28 @@ def update_device_group(device_group_id: int, device_group: DeviceGroup, session
     verify_access(1)
     db_device_group = session.get(DeviceGroup, device_group_id)
     if not db_device_group:
-        logger.warning("Device group not found")
+        logger.warning("Device group not found", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': user.USER_username
+        })
         return HTTPException(status_code=404, detail="device group not found")
 
     db_device_group.DG_libelle = device_group.DG_libelle
     session.add(db_device_group)
     session.commit()
     session.refresh(db_device_group)
-    logger.warning("Device group updated successfully")
+    logger.warning("Device group updated successfully", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': user.USER_username
+    })
     return db_device_group
 
 @router.delete("/{device_group_id}/delete/")
-def delete_device_group(device_group_id: int, session: SessionDep):
+def delete_device_group(device_group_id: int, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
     """
     Delete a specific device group by ID.
 
@@ -111,10 +145,20 @@ def delete_device_group(device_group_id: int, session: SessionDep):
     verify_access(1)
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
-        logger.warning("Device group not found")
+        logger.warning("Device group not found", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': user.USER_username
+        })
         return HTTPException(status_code=404, detail="device group not found")
 
     session.delete(device_group)
     session.commit()
-    logger.warning("Device group deleted successfully")
+    logger.warning("Device group deleted successfully", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': user.USER_username
+    })
     return {"detail": "DeviceGroup deleted successfully"}

@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
+from fastapi import Request, Depends, FastAPI, HTTPException, Query, status, APIRouter
 from fastapi.responses import RedirectResponse
 from typing import Annotated
 from pydantic import BaseModel
@@ -7,10 +7,10 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from sqlmodel import select
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from ..db.database import DeviceGroup
+from ..db.database import User, DeviceGroup
 from ..dependencies import SessionDep, pwd_context, oauth2_scheme, get_current_user, ALGORITHM, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, TokenData
 from ..internal.logger import logger
-from ..db.database import User
+from ..db.database import User, User
 
 router = APIRouter(
     prefix="/auth",
@@ -82,7 +82,7 @@ async def verify_access(accountNumber: int):
 
 
 @router.post("/login", response_model=Token)
-def login(session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
+def login(session: SessionDep, request: Request, form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
     """
     Log in a user and return an access token.
 
@@ -95,14 +95,24 @@ def login(session: SessionDep, form_data: Annotated[OAuth2PasswordRequestForm, D
     """
     user = session.exec(select(User).where(User.USER_username == form_data.username)).first()
     if not user or not verify_password(form_data.password, user.USER_passHash):
-        logger.warning("Incorrect username or password")
+        logger.warning("Incorrect username or password", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': form_data.username
+        })
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"username": user.USER_username},
         expires_delta=access_token_expires,
     )
-    logger.warning("Login successful")
+    logger.warning("Login successful", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'fail',
+        'user': form_data.username
+    })
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/me", response_model=User)

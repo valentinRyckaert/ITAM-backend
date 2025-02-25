@@ -1,6 +1,6 @@
-from fastapi import Depends, FastAPI, HTTPException, Query, status, APIRouter
+from fastapi import Request, Depends, FastAPI, HTTPException, Query, status, APIRouter
 from typing import Annotated
-from ..db.database import User
+from ..db.database import User, User
 from ..dependencies import SessionDep, engine, get_current_user
 from ..internal.logger import logger
 from sqlmodel import select
@@ -9,12 +9,11 @@ from ..internal.auth import verify_password, create_access_token, get_password_h
 router = APIRouter(
     prefix="/users",
     tags=["users"],
-    dependencies=[Depends(get_current_user)],
     responses={404: {"description": "Not found"}},
 )
 
 @router.post("/")
-def create_user(user: User, session: SessionDep):
+def create_user(user: User, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Create a new user.
 
@@ -27,17 +26,27 @@ def create_user(user: User, session: SessionDep):
     """
     verify_access(0)
     if session.get(User, user.USER_id):
-        logger.warning("User id already exists.")
+        logger.warning("User id already exists.", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': current_user.USER_username
+        })
         return HTTPException(status_code=400, detail="User id already exists")
     user.USER_passHash = get_password_hash(user.USER_passHash)
     session.add(user)
     session.commit()
     session.refresh(user)
-    logger.warning("User created successfully.")
+    logger.warning("User created successfully.", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': current_user.USER_username
+    })
     return user
 
 @router.get("/", response_model=list[User])
-def read_users(session: SessionDep) -> list[User]:
+def read_users(session: SessionDep, request: Request, current_user: User = Depends(get_current_user)) -> list[User]:
     """
     Retrieve a list of all users.
 
@@ -49,11 +58,16 @@ def read_users(session: SessionDep) -> list[User]:
     """
     verify_access(0)
     users = session.exec(select(User)).all()
-    logger.warning("Users read successfully.")
+    logger.warning("Users read successfully.", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': current_user.USER_username
+    })
     return users
 
 @router.get("/{user_id}/")
-def read_user(user_id: int, session: SessionDep):
+def read_user(user_id: int, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Retrieve a user by their ID.
 
@@ -67,13 +81,23 @@ def read_user(user_id: int, session: SessionDep):
     verify_access(0)
     user = session.get(User, user_id)
     if not user:
-        logger.warning("User not found.")
+        logger.warning("User not found.", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': current_user.USER_username
+        })
         return HTTPException(status_code=404, detail="User not found")
-    logger.warning("User read successfully.")
+    logger.warning("User read successfully.", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': current_user.USER_username
+    })
     return user
 
 @router.put("/{user_id}/")
-def update_user(user_id: int, user: User, session: SessionDep):
+def update_user(user_id: int, user: User, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Update an existing user.
 
@@ -88,21 +112,31 @@ def update_user(user_id: int, user: User, session: SessionDep):
     verify_access(0)
     db_user = session.get(User, user_id)
     if not db_user:
-        logger.warning("User not found.")
+        logger.warning("User not found.", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': current_user.USER_username
+        })
         return HTTPException(status_code=404, detail="User not found")
     db_user.USER_username = user.USER_username
     db_user.USER_passHash = user.USER_passHash
-    db_user.USER_role_id = user.U_role_id
+    db_user.USER_role_id = user.USER_role_id
     db_user.USER_permissions = user.USER_permissions
     db_user.USER_isActive = user.USER_isActive
     session.add(db_user)
     session.commit()
     session.refresh(db_user)
-    logger.warning("User updated successfully.")
+    logger.warning("User updated successfully.", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': current_user.USER_username
+    })
     return db_user
 
 @router.delete("/{user_id}/delete/")
-def delete_user(user_id: int, session: SessionDep):
+def delete_user(user_id: int, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Delete a user by their ID.
 
@@ -116,9 +150,19 @@ def delete_user(user_id: int, session: SessionDep):
     verify_access(0)
     user = session.get(User, user_id)
     if not user:
-        logger.warning("User not found.")
+        logger.warning("User not found.", extra={
+            'method': request.method,
+            'url': request.url.path,
+            'status': 'fail',
+            'user': current_user.USER_username
+        })
         return HTTPException(status_code=404, detail="User not found")
     session.delete(user)
     session.commit()
-    logger.warning("User deleted successfully.")
+    logger.warning("User deleted successfully.", extra={
+        'method': request.method,
+        'url': request.url.path,
+        'status': 'success',
+        'user': current_user.USER_username
+    })
     return {"detail": "User deleted successfully"}
