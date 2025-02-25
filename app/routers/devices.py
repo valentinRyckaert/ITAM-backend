@@ -22,7 +22,7 @@ router = APIRouter(
 def read_devices(
     session: SessionDep,
     request: Request,
-    user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     offset: int = 0,
     limit: Annotated[int, Query(le=100)] = 100
 ):
@@ -31,6 +31,8 @@ def read_devices(
 
     Args:
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
         offset (int): The offset for pagination.
         limit (int): The limit for pagination.
 
@@ -43,18 +45,20 @@ def read_devices(
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return devices
 
 @router.post("/")
-def create_device(device: Device, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def create_device(device: Device, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Create a new device.
 
     Args:
         device (Device): The device to create.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         Device: The created device.
@@ -65,7 +69,7 @@ def create_device(device: Device, session: SessionDep, request: Request, user: U
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=400, detail="Device id already exists")
     session.add(device)
@@ -75,18 +79,20 @@ def create_device(device: Device, session: SessionDep, request: Request, user: U
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return device
 
 @router.get("/{device_id}/")
-def read_device(device_id: int, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def read_device(device_id: int, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Retrieve a device by its ID.
 
     Args:
         device_id (int): The ID of the device.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         Device: The retrieved device.
@@ -98,19 +104,19 @@ def read_device(device_id: int, session: SessionDep, request: Request, user: Use
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=404, detail="Device not found")
     logger.warning("Device read successfully.", extra={
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return device
 
 @router.put("/{device_id}/")
-def update_device(device_id: int, device: Device, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def update_device(device_id: int, device: Device, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Update an existing device.
 
@@ -118,6 +124,8 @@ def update_device(device_id: int, device: Device, session: SessionDep, request: 
         device_id (int): The ID of the device to update.
         device (Device): The updated device data.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         Device: The updated device.
@@ -129,7 +137,7 @@ def update_device(device_id: int, device: Device, session: SessionDep, request: 
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=404, detail="Device not found")
     db_device.DEV_name = device.DEV_name
@@ -142,18 +150,20 @@ def update_device(device_id: int, device: Device, session: SessionDep, request: 
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return db_device
 
 @router.delete("/{device_id}/delete/")
-def delete_device(device_id: int, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def delete_device(device_id: int, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Delete a device by its ID.
 
     Args:
         device_id (int): The ID of the device to delete.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         Dict: A success message.
@@ -165,7 +175,7 @@ def delete_device(device_id: int, session: SessionDep, request: Request, user: U
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=404, detail="Device not found")
     session.delete(device)
@@ -174,7 +184,7 @@ def delete_device(device_id: int, session: SessionDep, request: Request, user: U
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return {"detail": "Device deleted successfully"}
 
@@ -199,13 +209,15 @@ def zipfiles(filenames):
     )
 
 @router.get("/{device_id}/deploy")
-def download_packages(device_id: int, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def download_packages(device_id: int, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Download packages for a device.
 
     Args:
         device_id (int): The ID of the device.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         StreamingResponse: The zip archive containing the packages.
@@ -218,6 +230,6 @@ def download_packages(device_id: int, session: SessionDep, request: Request, use
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return zipfiles(filepaths)

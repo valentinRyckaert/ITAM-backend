@@ -13,13 +13,15 @@ router = APIRouter(
 )
 
 @router.post("/")
-def create_package_group(package_group: PackageGroup, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def create_package_group(package_group: PackageGroup, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Create a new package group.
 
     Args:
         package_group (PackageGroup): The package group to create.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         PackageGroup: The created package group.
@@ -30,7 +32,7 @@ def create_package_group(package_group: PackageGroup, session: SessionDep, reque
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=400, detail="Package group id already exists")
     session.add(package_group)
@@ -40,17 +42,19 @@ def create_package_group(package_group: PackageGroup, session: SessionDep, reque
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return package_group
 
 @router.get("/", response_model=list[PackageGroup])
-def read_package_groups(session: SessionDep, request: Request, user: User = Depends(get_current_user)) -> list[PackageGroup]:
+def read_package_groups(session: SessionDep, request: Request, current_user: User = Depends(get_current_user)) -> list[PackageGroup]:
     """
     Retrieve a list of all package groups.
 
     Args:
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         List[PackageGroup]: A list of package groups.
@@ -61,18 +65,20 @@ def read_package_groups(session: SessionDep, request: Request, user: User = Depe
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return package_groups
 
 @router.get("/{package_group_id}/")
-def read_package_group(package_group_id: int, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def read_package_group(package_group_id: int, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Retrieve a package group by its ID.
 
     Args:
         package_group_id (int): The ID of the package group.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         PackageGroup: The retrieved package group.
@@ -84,19 +90,19 @@ def read_package_group(package_group_id: int, session: SessionDep, request: Requ
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=404, detail="Package group not found")
     logger.warning("Package group read successfully.", extra={
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return package_group
 
 @router.put("/{package_group_id}/")
-def update_package_group(package_group_id: int, package_group: PackageGroup, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def update_package_group(package_group_id: int, package_group: PackageGroup, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Update an existing package group.
 
@@ -104,6 +110,8 @@ def update_package_group(package_group_id: int, package_group: PackageGroup, ses
         package_group_id (int): The ID of the package group to update.
         package_group (PackageGroup): The updated package group data.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         PackageGroup: The updated package group.
@@ -115,7 +123,7 @@ def update_package_group(package_group_id: int, package_group: PackageGroup, ses
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=404, detail="Package group not found")
     db_package_group.PG_libelle = package_group.PG_libelle
@@ -126,18 +134,20 @@ def update_package_group(package_group_id: int, package_group: PackageGroup, ses
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return db_package_group
 
 @router.delete("/{package_group_id}/delete/")
-def delete_package_group(package_group_id: int, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def delete_package_group(package_group_id: int, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Delete a package group by its ID.
 
     Args:
         package_group_id (int): The ID of the package group to delete.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         Dict: A success message.
@@ -149,7 +159,7 @@ def delete_package_group(package_group_id: int, session: SessionDep, request: Re
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=404, detail="Package group not found")
     session.delete(package_group)
@@ -158,6 +168,6 @@ def delete_package_group(package_group_id: int, session: SessionDep, request: Re
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return {"detail": "PackageGroup deleted successfully"}

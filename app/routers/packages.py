@@ -15,13 +15,15 @@ router = APIRouter(
 )
 
 @router.post("/")
-def create_package(package: Package, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def create_package(package: Package, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Create a new package.
 
     Args:
         package (Package): The package to create.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         Package: The created package.
@@ -32,7 +34,7 @@ def create_package(package: Package, session: SessionDep, request: Request, user
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=400, detail="Package id already exists")
     session.add(package)
@@ -42,17 +44,19 @@ def create_package(package: Package, session: SessionDep, request: Request, user
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return package
 
 @router.get("/", response_model=list[Package])
-def read_packages(session: SessionDep, request: Request, user: User = Depends(get_current_user)) -> list[Package]:
+def read_packages(session: SessionDep, request: Request, current_user: User = Depends(get_current_user)) -> list[Package]:
     """
     Retrieve a list of all packages.
 
     Args:
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         List[Package]: A list of packages.
@@ -63,18 +67,20 @@ def read_packages(session: SessionDep, request: Request, user: User = Depends(ge
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return packages
 
 @router.get("/{package_id}/")
-def read_package(package_id: int, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def read_package(package_id: int, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Retrieve a package by its ID.
 
     Args:
         package_id (int): The ID of the package.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         Package: The retrieved package.
@@ -86,19 +92,19 @@ def read_package(package_id: int, session: SessionDep, request: Request, user: U
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=404, detail="Package not found")
     logger.warning("Package read successfully.", extra={
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return package
 
 @router.put("/{package_id}/")
-def update_package(package_id: int, package: Package, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def update_package(package_id: int, package: Package, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Update an existing package.
 
@@ -106,6 +112,8 @@ def update_package(package_id: int, package: Package, session: SessionDep, reque
         package_id (int): The ID of the package to update.
         package (Package): The updated package data.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         Package: The updated package.
@@ -117,7 +125,7 @@ def update_package(package_id: int, package: Package, session: SessionDep, reque
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=404, detail="Package not found")
     db_package.PACK_name = package.PACK_name
@@ -133,18 +141,20 @@ def update_package(package_id: int, package: Package, session: SessionDep, reque
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return db_package
 
 @router.delete("/{package_id}/delete/")
-def delete_package(package_id: int, session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def delete_package(package_id: int, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Delete a package by its ID.
 
     Args:
         package_id (int): The ID of the package to delete.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         Dict: A success message.
@@ -156,7 +166,7 @@ def delete_package(package_id: int, session: SessionDep, request: Request, user:
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=404, detail="Package not found")
     session.delete(package)
@@ -165,17 +175,19 @@ def delete_package(package_id: int, session: SessionDep, request: Request, user:
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return {"detail": "Package deleted successfully"}
 
 @router.get("/autoupdate")
-def auto_update(session: SessionDep, request: Request, user: User = Depends(get_current_user)):
+def auto_update(session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Automatically update packages based on the files in the deploy directory.
 
     Args:
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         Dict: A success message.
@@ -204,6 +216,6 @@ def auto_update(session: SessionDep, request: Request, user: User = Depends(get_
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return {"detail": "Autoupdate successful"}

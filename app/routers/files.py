@@ -15,12 +15,14 @@ router = APIRouter(
 UPLOAD_DIRECTORY = "app/db/deploy"
 
 @router.post("/")
-async def create_package(file: UploadFile, request: Request, user: User = Depends(get_current_user)):
+async def create_package(file: UploadFile, request: Request, current_user: User = Depends(get_current_user)):
     """
     Upload a new file package.
 
     Args:
         file (UploadFile): The file to upload.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         str: The filename of the uploaded file.
@@ -32,7 +34,7 @@ async def create_package(file: UploadFile, request: Request, user: User = Depend
             'method': request.method,
             'url': request.url.path,
             'status': 'fail',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return HTTPException(status_code=400, detail="File name already exists")
     with open(file_location, "wb") as f:
@@ -41,12 +43,12 @@ async def create_package(file: UploadFile, request: Request, user: User = Depend
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return file.filename
 
 @router.delete("/{filename}/delete/")
-def delete_file(filename: str, request: Request, user: User = Depends(get_current_user)):
+def delete_file(filename: str, request: Request, current_user: User = Depends(get_current_user)):
     """
     Delete a file by its filename.
 
@@ -64,13 +66,13 @@ def delete_file(filename: str, request: Request, user: User = Depends(get_curren
             'method': request.method,
             'url': request.url.path,
             'status': 'success',
-            'user': user.USER_username
+            'current_user': current_user.USER_username
         })
         return {"status": "removed successfully"}
     logger.warning("File not found.", extra={
         'method': request.method,
         'url': request.url.path,
         'status': 'fail',
-        'user': user.USER_username
+        'current_user': current_user.USER_username
     })
     return HTTPException(status_code=404, detail="File not found")

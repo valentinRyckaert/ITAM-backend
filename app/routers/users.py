@@ -20,6 +20,8 @@ def create_user(user: User, session: SessionDep, request: Request, current_user:
     Args:
         user (User): The user to create.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         User: The created user.
@@ -52,6 +54,8 @@ def read_users(session: SessionDep, request: Request, current_user: User = Depen
 
     Args:
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         List[User]: A list of users.
@@ -74,6 +78,8 @@ def read_user(user_id: int, session: SessionDep, request: Request, current_user:
     Args:
         user_id (int): The ID of the user.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         User: The retrieved user.
@@ -105,6 +111,8 @@ def update_user(user_id: int, user: User, session: SessionDep, request: Request,
         user_id (int): The ID of the user to update.
         user (User): The updated user data.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         User: The updated user.
@@ -143,6 +151,8 @@ def delete_user(user_id: int, session: SessionDep, request: Request, current_use
     Args:
         user_id (int): The ID of the user to delete.
         session (SessionDep): The database session.
+        request (Request): The request sent.
+        current_user (User): the user who does the request
 
     Returns:
         Dict: A success message.
