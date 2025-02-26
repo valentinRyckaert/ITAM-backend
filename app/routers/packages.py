@@ -193,26 +193,28 @@ def auto_update(session: SessionDep, request: Request, current_user: User = Depe
         Dict: A success message.
     """
     verify_access(1)
-    filenameInDB = []
-    for packageInDB in session.exec(select(Package)).all():
-        filenameInDB.append(packageInDB.PACK_name)
+    filesInDB = [packageInDB for packageInDB in session.exec(select(Package)).all()]
+    filenamesInDB = [package.PACK_name+package.PACK_type for package in filesInDB]
     fichiers = os.listdir("app/db/deploy/")
     for fichier in fichiers:
-        if os.path.isfile(os.path.join("app/db/deploy/", fichier)) and not (fichier in filenameInDB):
-            nom, extension = os.path.splitext(fichier)
+        if fichier not in filenamesInDB:
+            Fnom, Fextension = os.path.splitext(fichier)
             package = Package(
                 PACK_id=None,
-                PACK_name=nom,
-                PACK_type=extension,
+                PACK_name=Fnom,
+                PACK_type=Fextension,
                 PACK_os_supported="any"
             )
             session.add(package)
             session.commit()
             session.refresh(package)
-        if not os.path.isfile(os.path.join("app/db/deploy/", fichier)) and (fichier in filenameInDB):
+    
+    for filename in filenamesInDB:
+        if not (os.path.isfile(os.path.join("app/db/deploy/", filename))):
+            package = filesInDB[filenamesInDB.index(filename)]
             session.delete(package)
             session.commit()
-    logger.warning("Autoupdate successful.", extra={
+    logger.warning(f"Autoupdate successful.", extra={
         'method': request.method,
         'url': request.url.path,
         'status': 'success',
