@@ -128,7 +128,7 @@ def update_user(user_id: int, user: User, session: SessionDep, request: Request,
         })
         return HTTPException(status_code=404, detail="User not found")
     db_user.USER_username = user.USER_username
-    db_user.USER_passHash = user.USER_passHash
+    db_user.USER_passHash = get_password_hash(user.USER_passHash)
     db_user.USER_type = user.USER_type
     db_user.USER_isActive = user.USER_isActive
     session.add(db_user)
