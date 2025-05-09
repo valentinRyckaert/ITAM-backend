@@ -34,7 +34,7 @@ def create_user(user: User, session: SessionDep, request: Request, current_user:
             'status': 'fail',
             'user': current_user.USER_username
         })
-        return HTTPException(status_code=400, detail="User id already exists")
+        raise HTTPException(status_code=400, detail="User id already exists")
     user.USER_passHash = get_password_hash(user.USER_passHash)
     session.add(user)
     session.commit()
@@ -93,7 +93,7 @@ def read_user(user_id: int, session: SessionDep, request: Request, current_user:
             'status': 'fail',
             'user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found")
     logger.warning("User read successfully.", extra={
         'method': request.method,
         'url': request.url.path,
@@ -126,7 +126,7 @@ def update_user(user_id: int, user: User, session: SessionDep, request: Request,
             'status': 'fail',
             'user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found")
     db_user.USER_username = user.USER_username
     db_user.USER_passHash = get_password_hash(user.USER_passHash)
     db_user.USER_type = user.USER_type
@@ -143,7 +143,7 @@ def update_user(user_id: int, user: User, session: SessionDep, request: Request,
     return db_user
 
 @router.delete("/{user_id}/delete/")
-def delete_user(user_id: int, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
+async def delete_user(user_id: int, session: SessionDep, request: Request, current_user: User = Depends(get_current_user)):
     """
     Delete a user by their ID.
 
@@ -156,7 +156,7 @@ def delete_user(user_id: int, session: SessionDep, request: Request, current_use
     Returns:
         Dict: A success message.
     """
-    verify_access(0)
+    await verify_access(0)
     user = session.get(User, user_id)
     if not user:
         logger.warning("User not found.", extra={
@@ -165,7 +165,7 @@ def delete_user(user_id: int, session: SessionDep, request: Request, current_use
             'status': 'fail',
             'user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=404, detail="User not found")
     session.delete(user)
     session.commit()
     logger.warning("User deleted successfully.", extra={

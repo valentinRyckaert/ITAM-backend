@@ -15,7 +15,7 @@ router = APIRouter(
 UPLOAD_DIRECTORY = "app/db/deploy"
 
 @router.post("/")
-async def create_package(file: UploadFile, request: Request, current_user: User = Depends(get_current_user)):
+def create_package(file: UploadFile, request: Request, current_user: User = Depends(get_current_user)):
     """
     Upload a new file package.
 
@@ -36,7 +36,7 @@ async def create_package(file: UploadFile, request: Request, current_user: User 
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=400, detail="File name already exists")
+        raise HTTPException(status_code=400, detail="File name already exists")
     with open(file_location, "wb") as f:
         shutil.copyfileobj(file.file, f)
     logger.warning("File uploaded successfully.", extra={
@@ -75,4 +75,4 @@ def delete_file(filename: str, request: Request, current_user: User = Depends(ge
         'status': 'fail',
         'current_user': current_user.USER_username
     })
-    return HTTPException(status_code=404, detail="File not found")
+    raise HTTPException(status_code=404, detail="File not found")

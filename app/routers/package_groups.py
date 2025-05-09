@@ -34,7 +34,7 @@ def create_package_group(package_group: PackageGroup, session: SessionDep, reque
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=400, detail="Package group id already exists")
+        raise HTTPException(status_code=400, detail="Package group id already exists")
     session.add(package_group)
     session.commit()
     session.refresh(package_group)
@@ -92,7 +92,7 @@ def read_package_group(package_group_id: int, session: SessionDep, request: Requ
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="Package group not found")
+        raise HTTPException(status_code=404, detail="Package group not found")
     logger.warning("Package group read successfully.", extra={
         'method': request.method,
         'url': request.url.path,
@@ -125,7 +125,7 @@ def update_package_group(package_group_id: int, package_group: PackageGroup, ses
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="Package group not found")
+        raise HTTPException(status_code=404, detail="Package group not found")
     db_package_group.PG_libelle = package_group.PG_libelle
     session.add(db_package_group)
     session.commit()
@@ -161,7 +161,7 @@ def delete_package_group(package_group_id: int, session: SessionDep, request: Re
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="Package group not found")
+        raise HTTPException(status_code=404, detail="Package group not found")
     session.delete(package_group)
     session.commit()
     logger.warning("Package group deleted successfully.", extra={

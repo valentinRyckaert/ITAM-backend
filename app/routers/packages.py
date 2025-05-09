@@ -36,7 +36,7 @@ def create_package(package: Package, session: SessionDep, request: Request, curr
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=400, detail="Package id already exists")
+        raise HTTPException(status_code=400, detail="Package id already exists")
     session.add(package)
     session.commit()
     session.refresh(package)
@@ -94,7 +94,7 @@ def read_package(package_id: int, session: SessionDep, request: Request, current
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="Package not found")
+        raise HTTPException(status_code=404, detail="Package not found")
     logger.warning("Package read successfully.", extra={
         'method': request.method,
         'url': request.url.path,
@@ -127,7 +127,7 @@ def update_package(package_id: int, package: Package, session: SessionDep, reque
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="Package not found")
+        raise HTTPException(status_code=404, detail="Package not found")
     db_package.PACK_name = package.PACK_name
     db_package.PACK_type = package.PACK_type
     db_package.PACK_os_supported = package.PACK_os_supported
@@ -168,7 +168,7 @@ def delete_package(package_id: int, session: SessionDep, request: Request, curre
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="Package not found")
+        raise HTTPException(status_code=404, detail="Package not found")
     session.delete(package)
     session.commit()
     logger.warning("Package deleted successfully.", extra={

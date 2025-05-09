@@ -71,7 +71,7 @@ def create_device(device: Device, session: SessionDep, request: Request, current
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=400, detail="Device id already exists")
+        raise HTTPException(status_code=400, detail="Device id already exists")
     session.add(device)
     session.commit()
     session.refresh(device)
@@ -106,7 +106,7 @@ def read_device(device_id: int, session: SessionDep, request: Request, current_u
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="Device not found")
+        raise HTTPException(status_code=404, detail="Device not found")
     logger.warning("Device read successfully.", extra={
         'method': request.method,
         'url': request.url.path,
@@ -139,7 +139,7 @@ def update_device(device_id: int, device: Device, session: SessionDep, request: 
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="Device not found")
+        raise HTTPException(status_code=404, detail="Device not found")
     db_device.DEV_name = device.DEV_name
     db_device.DEV_os = device.DEV_os
     db_device.DG_id = device.DG_id
@@ -177,7 +177,7 @@ def delete_device(device_id: int, session: SessionDep, request: Request, current
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="Device not found")
+        raise HTTPException(status_code=404, detail="Device not found")
     session.delete(device)
     session.commit()
     logger.warning("Device deleted successfully.", extra={

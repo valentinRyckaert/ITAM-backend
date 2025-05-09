@@ -34,7 +34,7 @@ def create_device_group(device_group: DeviceGroup, session: SessionDep, request:
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=400, detail="Device group id already exists")
+        raise HTTPException(status_code=400, detail="Device group id already exists")
     session.add(device_group)
     session.commit()
     session.refresh(device_group)
@@ -91,7 +91,7 @@ def read_device_group(device_group_id: int, session: SessionDep, request: Reques
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="device group not found")
+        raise HTTPException(status_code=404, detail="device group not found")
     logger.warning("Device group read successfully", extra={
         'method': request.method,
         'url': request.url.path,
@@ -124,7 +124,7 @@ def update_device_group(device_group_id: int, device_group: DeviceGroup, session
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="device group not found")
+        raise HTTPException(status_code=404, detail="device group not found")
 
     db_device_group.DG_libelle = device_group.DG_libelle
     session.add(db_device_group)
@@ -161,7 +161,7 @@ def delete_device_group(device_group_id: int, session: SessionDep, request: Requ
             'status': 'fail',
             'current_user': current_user.USER_username
         })
-        return HTTPException(status_code=404, detail="device group not found")
+        raise HTTPException(status_code=404, detail="device group not found")
 
     session.delete(device_group)
     session.commit()
