@@ -14,4 +14,15 @@ docker exec -it itam-mariadb mariadb -u root -p itamweb
 INSERT INTO user VALUES (0, 'admin', '$2b$12$/GVZxPEYmhCT3MpY/uS8R.l3dXhpA5fBqzUIa9lESLMXgoVs6s2J2', 0, true);
 ```
 
+## .env
+```txt
+DB_USER=user
+DB_PASS=123456
+DB_HOST=127.0.0.1:3306
+DB_NAME=itam_db
+
+SECRET_KEY=your_secret_key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+```
 

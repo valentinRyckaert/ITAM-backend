@@ -27,9 +27,9 @@ engine = create_engine(
     f"mariadb+mariadbconnector://{user}:{password}@{host}/{dbname}"
 )
 
-SECRET_KEY = "your_secret_key"  # Changez cela en une clé secrète sécurisée
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+SECRET_KEY = getenv('SECRET_KEY')  # Changez cela en une clé secrète sécurisée
+ALGORITHM = getenv('ALGORITHM')
+ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
 
 class TokenData(BaseModel):
     username: str
