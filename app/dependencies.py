@@ -27,7 +27,7 @@ engine = create_engine(
     f"mariadb+mariadbconnector://{user}:{password}@{host}/{dbname}"
 )
 
-SECRET_KEY = getenv('SECRET_KEY')  # Changez cela en une clé secrète sécurisée
+SECRET_KEY = getenv('SECRET_KEY')
 ALGORITHM = getenv('ALGORITHM')
 ACCESS_TOKEN_EXPIRE_MINUTES = int(getenv('ACCESS_TOKEN_EXPIRE_MINUTES'))
 

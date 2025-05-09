@@ -39,7 +39,7 @@ def read_devices(
     Returns:
         List[Device]: A list of devices.
     """
-    verify_access(2)
+    verify_access(2, current_user.USER_type)
     devices = session.exec(select(Device).offset(offset).limit(limit)).all()
     logger.warning("Devices read successfully.", extra={
         'method': request.method,
@@ -63,7 +63,7 @@ def create_device(device: Device, session: SessionDep, request: Request, current
     Returns:
         Device: The created device.
     """
-    verify_access(3)
+    verify_access(3, current_user.USER_type)
     if session.get(Device, device.DEV_id):
         logger.warning("Device id already exists.", extra={
             'method': request.method,
@@ -97,7 +97,7 @@ def read_device(device_id: int, session: SessionDep, request: Request, current_u
     Returns:
         Device: The retrieved device.
     """
-    verify_access(2)
+    verify_access(2, current_user.USER_type)
     device = session.get(Device, device_id)
     if not device:
         logger.warning("Device not found.", extra={
@@ -130,7 +130,7 @@ def update_device(device_id: int, device: Device, session: SessionDep, request: 
     Returns:
         Device: The updated device.
     """
-    verify_access(3)
+    verify_access(3, current_user.USER_type)
     db_device = session.get(Device, device_id)
     if not db_device:
         logger.warning("Device not found.", extra={
@@ -168,7 +168,7 @@ def delete_device(device_id: int, session: SessionDep, request: Request, current
     Returns:
         Dict: A success message.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     device = session.get(Device, device_id)
     if not device:
         logger.warning("Device not found.", extra={
@@ -222,7 +222,7 @@ def download_packages(device_id: int, session: SessionDep, request: Request, cur
     Returns:
         StreamingResponse: The zip archive containing the packages.
     """
-    verify_access(3)
+    verify_access(3, current_user.USER_type)
     filepaths = []
     for package in session.exec(select(Package).where(Package.DEV_id == device_id)):
         filepaths.append(package.PACK_name)

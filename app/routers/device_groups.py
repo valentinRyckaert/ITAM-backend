@@ -26,7 +26,7 @@ def create_device_group(device_group: DeviceGroup, session: SessionDep, request:
     Returns:
         DeviceGroup: The created device group.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     if session.get(DeviceGroup, device_group.DG_id):
         logger.warning("Device group id already exists", extra={
             'method': request.method,
@@ -59,7 +59,7 @@ def read_device_groups(session: SessionDep, request: Request, current_user: User
     Returns:
         list[DeviceGroup]: A list of device groups.
     """
-    verify_access(2)
+    verify_access(2, current_user.USER_type)
     logger.warning("Reading all device groups", extra={
         'method': request.method,
         'url': request.url.path,
@@ -82,7 +82,7 @@ def read_device_group(device_group_id: int, session: SessionDep, request: Reques
     Returns:
         DeviceGroup: The device group with the specified ID.
     """
-    verify_access(2)
+    verify_access(2, current_user.USER_type)
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
         logger.warning("Device group not found", extra={
@@ -115,7 +115,7 @@ def update_device_group(device_group_id: int, device_group: DeviceGroup, session
     Returns:
         DeviceGroup: The updated device group.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     db_device_group = session.get(DeviceGroup, device_group_id)
     if not db_device_group:
         logger.warning("Device group not found", extra={
@@ -152,7 +152,7 @@ def delete_device_group(device_group_id: int, session: SessionDep, request: Requ
     Returns:
         dict: A message indicating the success of the deletion.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     device_group = session.get(DeviceGroup, device_group_id)
     if not device_group:
         logger.warning("Device group not found", extra={

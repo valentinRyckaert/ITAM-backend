@@ -28,7 +28,7 @@ def create_package(package: Package, session: SessionDep, request: Request, curr
     Returns:
         Package: The created package.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     if session.get(Package, package.PACK_id):
         logger.warning("Package id already exists.", extra={
             'method': request.method,
@@ -61,7 +61,7 @@ def read_packages(session: SessionDep, request: Request, current_user: User = De
     Returns:
         List[Package]: A list of packages.
     """
-    verify_access(2)
+    verify_access(2, current_user.USER_type)
     packages = session.exec(select(Package)).all()
     logger.warning("Packages read successfully.", extra={
         'method': request.method,
@@ -85,7 +85,7 @@ def read_package(package_id: int, session: SessionDep, request: Request, current
     Returns:
         Package: The retrieved package.
     """
-    verify_access(2)
+    verify_access(2, current_user.USER_type)
     package = session.get(Package, package_id)
     if not package:
         logger.warning("Package not found.", extra={
@@ -118,7 +118,7 @@ def update_package(package_id: int, package: Package, session: SessionDep, reque
     Returns:
         Package: The updated package.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     db_package = session.get(Package, package_id)
     if not db_package:
         logger.warning("Package not found.", extra={
@@ -159,7 +159,7 @@ def delete_package(package_id: int, session: SessionDep, request: Request, curre
     Returns:
         Dict: A success message.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     package = session.get(Package, package_id)
     if not package:
         logger.warning("Package not found.", extra={
@@ -192,7 +192,7 @@ def auto_update(session: SessionDep, request: Request, current_user: User = Depe
     Returns:
         Dict: A success message.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     filesInDB = [packageInDB for packageInDB in session.exec(select(Package)).all()]
     filenamesInDB = [package.PACK_name+package.PACK_type for package in filesInDB]
     fichiers = os.listdir("app/db/deploy/")

@@ -26,7 +26,7 @@ def create_user(user: User, session: SessionDep, request: Request, current_user:
     Returns:
         User: The created user.
     """
-    verify_access(0)
+    verify_access(0, current_user.USER_type)
     if session.get(User, user.USER_id):
         logger.warning("User id already exists.", extra={
             'method': request.method,
@@ -60,7 +60,7 @@ def read_users(session: SessionDep, request: Request, current_user: User = Depen
     Returns:
         List[User]: A list of users.
     """
-    verify_access(0)
+    verify_access(0, current_user.USER_type)
     users = session.exec(select(User)).all()
     logger.warning("Users read successfully.", extra={
         'method': request.method,
@@ -84,7 +84,7 @@ def read_user(user_id: int, session: SessionDep, request: Request, current_user:
     Returns:
         User: The retrieved user.
     """
-    verify_access(0)
+    verify_access(0, current_user.USER_type)
     user = session.get(User, user_id)
     if not user:
         logger.warning("User not found.", extra={
@@ -117,7 +117,7 @@ def update_user(user_id: int, user: User, session: SessionDep, request: Request,
     Returns:
         User: The updated user.
     """
-    verify_access(0)
+    verify_access(0, current_user.USER_type)
     db_user = session.get(User, user_id)
     if not db_user:
         logger.warning("User not found.", extra={
@@ -156,7 +156,7 @@ async def delete_user(user_id: int, session: SessionDep, request: Request, curre
     Returns:
         Dict: A success message.
     """
-    await verify_access(0)
+    await verify_access(0, current_user.USER_type)
     user = session.get(User, user_id)
     if not user:
         logger.warning("User not found.", extra={

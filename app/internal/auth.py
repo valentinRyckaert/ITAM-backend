@@ -11,6 +11,7 @@ from ..db.database import User, DeviceGroup
 from ..dependencies import SessionDep, pwd_context, oauth2_scheme, get_current_user, ALGORITHM, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, TokenData
 from ..internal.logger import logger
 from ..db.database import User, User
+from requests import get
 
 router = APIRouter(
     prefix="/auth",
@@ -68,16 +69,18 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-async def verify_access(accountNumber: int):
+def verify_access(requiredAccountNumber: int, currentAccountNumber):
     """
     Verify if the current user has the required access level.
 
     Args:
-        accountNumber (int): The required access level.
+        requiredAccountNumber (int): The required access level.
+        currentAccountNumber (int): The access level of the current user
     """
-    if accountNumber < (await get_current_user(SessionDep)).USER_type:
-        logger.warning("Incorrect rights.")
-        raise HTTPException(status_code=400, detail="Incorrect rights")
+    currentUser = get("http://127.0.0.1:8000/auth/me")
+    if currentAccountNumber > requiredAccountNumber:
+        raise HTTPException(status_code=400, detail="not enough rights") 
+    
 
 
 

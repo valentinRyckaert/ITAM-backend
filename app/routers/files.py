@@ -27,7 +27,7 @@ def create_package(file: UploadFile, request: Request, current_user: User = Depe
     Returns:
         str: The filename of the uploaded file.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     file_location = os.path.join(UPLOAD_DIRECTORY, file.filename)
     if os.path.isfile(file_location):
         logger.warning("File name already exists.", extra={
@@ -58,7 +58,7 @@ def delete_file(filename: str, request: Request, current_user: User = Depends(ge
     Returns:
         Dict: A success message.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     file_location = os.path.join(UPLOAD_DIRECTORY, filename)
     if os.path.exists(file_location):
         os.remove(file_location)

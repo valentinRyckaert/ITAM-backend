@@ -26,7 +26,7 @@ def create_package_group(package_group: PackageGroup, session: SessionDep, reque
     Returns:
         PackageGroup: The created package group.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     if session.get(PackageGroup, package_group.PG_id):
         logger.warning("Package group id already exists.", extra={
             'method': request.method,
@@ -59,7 +59,7 @@ def read_package_groups(session: SessionDep, request: Request, current_user: Use
     Returns:
         List[PackageGroup]: A list of package groups.
     """
-    verify_access(2)
+    verify_access(2, current_user.USER_type)
     package_groups = session.exec(select(PackageGroup)).all()
     logger.warning("Package groups read successfully.", extra={
         'method': request.method,
@@ -83,7 +83,7 @@ def read_package_group(package_group_id: int, session: SessionDep, request: Requ
     Returns:
         PackageGroup: The retrieved package group.
     """
-    verify_access(2)
+    verify_access(2, current_user.USER_type)
     package_group = session.get(PackageGroup, package_group_id)
     if not package_group:
         logger.warning("Package group not found.", extra={
@@ -116,7 +116,7 @@ def update_package_group(package_group_id: int, package_group: PackageGroup, ses
     Returns:
         PackageGroup: The updated package group.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     db_package_group = session.get(PackageGroup, package_group_id)
     if not db_package_group:
         logger.warning("Package group not found.", extra={
@@ -152,7 +152,7 @@ def delete_package_group(package_group_id: int, session: SessionDep, request: Re
     Returns:
         Dict: A success message.
     """
-    verify_access(1)
+    verify_access(1, current_user.USER_type)
     package_group = session.get(PackageGroup, package_group_id)
     if not package_group:
         logger.warning("Package group not found.", extra={
