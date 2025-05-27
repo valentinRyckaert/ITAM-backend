@@ -5,6 +5,7 @@ from ..dependencies import SessionDep, engine, get_current_user
 from ..internal.logger import logger
 from sqlmodel import select
 from ..internal.auth import verify_password, create_access_token, get_password_hash, verify_access
+from bcrypt import checkpw
 
 router = APIRouter(
     prefix="/users",
@@ -128,7 +129,8 @@ def update_user(user_id: int, user: User, session: SessionDep, request: Request,
         })
         raise HTTPException(status_code=404, detail="User not found")
     db_user.USER_username = user.USER_username
-    db_user.USER_passHash = get_password_hash(user.USER_passHash)
+    if checkpw(get_password_hash(user.USER_passHash).encode('utf-8'), db_user.USER_passHash.encode('utf-8')):
+        db_user.USER_passHash = get_password_hash(user.USER_passHash)
     db_user.USER_type = user.USER_type
     db_user.USER_isActive = user.USER_isActive
     session.add(db_user)
